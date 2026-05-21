@@ -1,0 +1,38 @@
+<View style={styles.container}>
+      <Text>Hola Mundoo!!</Text>  
+
+      <Text>{'\n'}Que tal {miVariable}</Text> 
+
+      {/* Así imprime todo el array seguido */}
+      <Text>{'\n'}{notas}</Text>  
+
+
+      {/* Vemos interface */}
+      <Text>{'\n'}Cliente: {cliente.nombre}</Text>
+
+      {/* Continuamos con interface */}
+      <Saludar nombre="Francisco" apellido="Pollet"></Saludar>
+
+
+      <Text>{'\n'}</Text>
+
+      {/* FlatList */}
+      <FlatList<Alumno>
+        data={alumnos}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <View>
+            <Text>{'\n'}{item.nombre}</Text>
+            <Text>Nota: {item.nota}</Text>
+          </View>
+        )}
+      />
+
+
+
+      
+
+
+
+
+    </View>
