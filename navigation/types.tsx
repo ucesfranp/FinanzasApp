@@ -6,5 +6,9 @@ export type RootStackParamList = {
         nombre: string;
         nota: number;
     };
+    Crud: undefined;
+
+    Tareas: undefined;
+
     Ajustes: undefined;
 };

@@ -21,6 +21,22 @@ export default function HomeScreen({ navigation }: Props) {
       >
         <Text style={styles.botonTxt}>Ver detalle</Text>
       </Pressable>
+
+      <Pressable
+        style={[styles.boton, { marginTop: 20 }]}
+        onPress={() => navigation.navigate('Crud')}
+      >
+        <Text style={styles.botonTxt}>Crud</Text>
+      </Pressable>
+
+      <Pressable
+        style={[styles.boton, { marginTop: 20 }]}
+        onPress={() => navigation.navigate('Tareas')}
+      >
+        <Text style={styles.botonTxt}>Tareas</Text>
+      </Pressable>
+
+      
     </View>
   );
 }
