@@ -18,6 +18,7 @@ type Todo = {
   completed: boolean;
 };
 
+// CRUD = Create, Read, Update, Delete
 export default function CrudScreen(
   { navigation }: Props
 
@@ -26,6 +27,7 @@ export default function CrudScreen(
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Función para cargar todos los registros
   const cargarTodos = () => {
     setCargando(true);
     setError(null);
@@ -43,14 +45,16 @@ export default function CrudScreen(
       });
   };
 
-
+  //
   return (
     <View style={styles.container}>
 
+      {/* Este botón carga todos los registros */}
       <Pressable style={styles.boton} onPress={cargarTodos}>
         <Text style={styles.botonTxt}>Ver todos</Text>
       </Pressable>
 
+      {/* Esto muestra el indicador de carga  */}
       {cargando && <ActivityIndicator size="large" color="#1B3A6B" />}
       {error && (
         <Text style={styles.error}>Error: {error}</Text>
@@ -114,6 +118,8 @@ const styles = StyleSheet.create({
     },
   });*/
 
+//Estos son los estilos que usamos 
+//Los puedo definir aca y usar en otro archivo ? respuesta: SI, pero no es lo ideal, lo mejor es definirlos en cada archivo, o crear un archivo de estilos compartidos
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16,  backgroundColor: '#fff' },
   titulo: { fontSize: 24, fontWeight: 'bold',   color: '#1B3A6B', textAlign: 'center' },

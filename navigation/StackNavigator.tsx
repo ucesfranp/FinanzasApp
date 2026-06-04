@@ -5,6 +5,7 @@ import HomeScreen from '../screens/HomeScree';
 import DetalleScreen from '../screens/DetalleScreen';
 import CrudScreen from '../screens/CrudScreen';
 import TareasScreen from '../screens/TareasScreen';
+import EjerciciosScreen from '../screens/EjerciciosScreen';
 
 // Stack tipado: sabe que pantallas existen y sus parametros
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -27,6 +28,10 @@ export default function StackNavigator() {
             <Stack.Screen
                 name='Tareas'
                 component={TareasScreen}
+            />
+            <Stack.Screen
+                name='Ejercicios'
+                component={EjerciciosScreen} //Da error porque no esta importado, lo importamos al principio del archivo
             />
         </Stack.Navigator>  
     )

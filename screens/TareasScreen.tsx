@@ -6,6 +6,12 @@ import { RootStackParamList } from '../navigation/types';
 
 import { Tarea } from './Tipos'
 import { useState, useEffect} from 'react';
+import axios from 'axios';
+
+
+//para el api.ts
+import { tareasApi } from '../services/tareasApi';
+
 
 type Estado = 'cargando' | 'error' | 'listo';
 const URL = 'https://671195294eca2acdb5f52a81.mockapi.io/tareas';
@@ -30,7 +36,8 @@ export default function TareasScreen(
     const [textoEdicion, setTextoEdicion] = useState('');
 
 
-    async function cargar() {
+    // GET CON FETCH
+    /* async function cargar() {
         setEstado('cargando');
         try {
             const res = await fetch(URL);
@@ -41,8 +48,27 @@ export default function TareasScreen(
         } catch {
             setEstado('error');
         }
+    } */
+
+    // GET CON AXIOS
+    /* async function cargar(){
+        setEstado('cargando');
+        try{
+            const res = await axios.get<Tarea[]>(URL);
+            setTareas(res.data); 
+            setEstado('listo');
+        } catch {
+            setEstado('error');
+        }
+    } */
+    //Agregamos lo de la api
+    async function cargar(){
+        const res = await tareasApi.getAll();
+        setTareas(res.data);
     }
-    
+
+
+
     // GET al montar
     useEffect(() => { cargar(); }, []);
 
@@ -50,8 +76,8 @@ export default function TareasScreen(
     if (estado==='cargando') return <ActivityIndicator/>;
     if (estado==='error') return <Text>Error al cargar</Text>;
 
-
-    async function agregar() {
+    //AGREGAR CON FETCH
+    /* async function agregar() {
         if (!nuevaTarea.trim()) return; // validar
         try {
             const res = await fetch(URL, {
@@ -65,10 +91,26 @@ export default function TareasScreen(
         } catch {
             setEstado('error');
         }
+    } */
+
+    //AGREGAR CON AXIOS
+    /* async function agregar(){
+        await axios.post(URL, {
+            task: nuevaTarea
+        });
+        setNuevaTarea('');
+        await cargar();
+    } */
+    //Agregamos lo de la api
+    async function agregar(){
+        await tareasApi.create(nuevaTarea);
+        await cargar();
     }
 
 
-    async function eliminar(id: string) {
+
+    // DELETE CON FETCH
+    /* async function eliminar(id: string) {
         try {
             const res = await fetch(`${URL}/${id}`, { 
                 method: 'DELETE',
@@ -79,10 +121,26 @@ export default function TareasScreen(
         } catch {
             setEstado('error');
         }
+    } */
+
+    //DELETE CON AXIOS
+    /* async function eliminar(id: string) {
+        try{
+            await axios.delete(`${URL}/${id}`);
+            setTareas(p => p.filter(t=> t.id!==id));
+        }catch {
+            setEstado('error');
+        }
+    } */
+   //Agregamos lo de la api
+    async function eliminar(id: string) {
+        await tareasApi.remove(id);
+        setTareas(p => p.filter(t => t.id !== id));
     }
 
 
-    async function guardarEdicion() {
+    // PUT CON FETCH
+    /* async function guardarEdicion() {
         if (!editandoId) return;
         try {
             const res = await fetch(`${URL}/${editandoId}`, {
@@ -96,14 +154,25 @@ export default function TareasScreen(
         } catch {
             setEstado('error');
         }
-    }
+    } */
 
+    //PUT CON AXIOS
+    /* async function guardarEdicion() {
+        await axios.put(`${URL}/${editandoId}`, { task: textoEdicion }); 
+        setEditandoId(null); 
+        await cargar();
+    } */
+    //Agregamos lo de la api
+    async function guardarEdicion() {
+        await tareasApi.update(editandoId!, textoEdicion);
+        await cargar();
+    }
 
 
 
   return (
     <View style={styles.container}>
-        <Text>Tareas</Text>
+        <Text>Tareas %</Text>
 
 
         <TextInput
@@ -127,31 +196,32 @@ export default function TareasScreen(
             renderItem={({ item }) => (
                 <View style={styles.fila}>
 
-                    {editandoId === item.id ? (// Modo edicion: mostrar input
-                        <>
+
+                    <Text style={styles.texto}>
+                        {item.task}
+                    </Text>
+
+                    {editandoId === item.id ? (
+                        <> 
                             <TextInput
                                 value={textoEdicion}
                                 onChangeText={setTextoEdicion}
                                 style={styles.inputEdicion}
                             />
-                            <Pressable onPress={guardarEdicion}>
-                                <Text>Guardar</Text> </Pressable>
+                            <Pressable style={styles.btnGuardar} onPress={guardarEdicion}>
+                                <Text>Guardar</Text>
+                            </Pressable>
                         </>
-                    ) : ( // Modo normal: mostrar texto + boton editar
+                    ) : ( 
                         <>
-                            <Text>{item.task}</Text>
-                            <Pressable onPress={() => {
+                            <Pressable style={styles.btnEditar} onPress={() => {
                                 setEditandoId(item.id);
                                 setTextoEdicion(item.task);
                             }}>
-                            <Text>Editar</Text> </Pressable>
+                                <Text>Editar</Text>
+                            </Pressable>
                         </>
                     )}
-                    
-
-                    <Text style={styles.texto}>
-                        {item.task}
-                    </Text>
 
 
                     <Pressable
@@ -179,6 +249,8 @@ export default function TareasScreen(
         onPress={() => navigation.goBack()}
       >
         <Text style={styles.botonTxt}>Volver</Text>
+
+
       </Pressable>
     </View>
   );
@@ -207,6 +279,7 @@ const styles = StyleSheet.create({
       paddingHorizontal: 24,
       paddingVertical: 12,
       borderRadius: 8,
+      marginBottom: 28,
     },
     botonTxt: {
       color: '#fff',
@@ -232,9 +305,11 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     btnEliminar: {
-      color: '#fff',
-      //fontSize: 16,
-      fontWeight: 'bold',
+      backgroundColor: '#ff6b6b',
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 4,
+        marginBottom: 28,
     },
     btnEliminarTxt: {
       color: '#000000',
@@ -245,6 +320,23 @@ const styles = StyleSheet.create({
       color: '#000000',
       fontSize: 16,
       fontWeight: 'bold',
+      borderWidth: 1,
+      borderColor: '#ccc',
+      paddingHorizontal: 8,
+      marginBottom: 8,
     },
-   
+    btnEditar: {
+      backgroundColor: '#4caf50',
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 4,
+      marginBottom: 8,
+    },
+    btnGuardar: {
+      backgroundColor: '#2196F3',
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 4,
+      marginBottom: 8,
+    },
   });
