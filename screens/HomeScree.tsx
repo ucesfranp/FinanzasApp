@@ -3,18 +3,36 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { useTema } from '../context/TemaContext';
+import { useState, useEffect } from 'react';
+import { leerPrefs } from '../services/preferencias';
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 
 interface Props { navigation: HomeNavProp; }
 
+
+//Leemos las preferencias al inicial la app y mostramos un saludo personalizado con el nombre guardado.
+
 export default function HomeScreen({ navigation }: Props) {
   const { colores } = useTema();
+  const [nombre, setNombre] = useState(''); // estado para guardar el nombre leído de las preferencias --> nombre es el estado, setNombre es la función para actualizarlo, y '' es el valor inicial (vacío)
+
+  useEffect(() => {
+    async function cargarNombre() {
+      const prefs = await leerPrefs();
+      if (prefs && prefs.nombre) { // esto se lee así: si prefs existe y tiene una propiedad nombre, entonces...
+        setNombre(prefs.nombre); // actualizamos el estado con el nombre leído de las preferencias
+      }
+    }
+    cargarNombre();
+  }, []);
 
   return (
     <View style={[styles.container, { backgroundColor: colores.fondo }]}>
-      <Text style={[styles.titulo, { color: colores.textoPrimario }]}>Pantalla Home</Text>
+      <Text style={[styles.titulo, { color: colores.textoPrimario }]}>
+        {nombre ? `¡Hola ${nombre}!` : 'Pantalla Home'} {/* Si nombre tiene algo, mostramos "¡Hola {nombre}!", sino mostramos "Pantalla Home" */}
+      </Text>
       <Pressable
         style={[styles.boton, { backgroundColor: colores.boton }]}
         onPress={() => navigation.navigate('Detalle', {
