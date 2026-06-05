@@ -2,6 +2,7 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
+import { useTema } from '../context/TemaContext';
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -9,11 +10,13 @@ type HomeNavProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 interface Props { navigation: HomeNavProp; }
 
 export default function HomeScreen({ navigation }: Props) {
+  const { colores } = useTema();
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.titulo}>Pantalla Home</Text>
+    <View style={[styles.container, { backgroundColor: colores.fondo }]}>
+      <Text style={[styles.titulo, { color: colores.textoPrimario }]}>Pantalla Home</Text>
       <Pressable
-        style={styles.boton}
+        style={[styles.boton, { backgroundColor: colores.boton }]}
         onPress={() => navigation.navigate('Detalle', {
           nombre: 'Ana',
           nota: 85,
@@ -23,24 +26,31 @@ export default function HomeScreen({ navigation }: Props) {
       </Pressable>
 
       <Pressable
-        style={[styles.boton, { marginTop: 20 }]}
+        style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
         onPress={() => navigation.navigate('Crud')}
       >
         <Text style={styles.botonTxt}>Crud</Text>
       </Pressable>
 
       <Pressable
-        style={[styles.boton, { marginTop: 20 }]}
+        style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
         onPress={() => navigation.navigate('Tareas')}
       >
         <Text style={styles.botonTxt}>Tareas</Text>
       </Pressable>
 
       <Pressable
-        style={[styles.boton, { marginTop: 20 }]}
+        style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
         onPress={() => navigation.navigate('Ejercicios')}
       >
         <Text style={styles.botonTxt}>Ejercicios</Text>
+      </Pressable>
+
+      <Pressable
+        style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
+        onPress={() => navigation.navigate('Ajustes')}
+      >
+        <Text style={styles.botonTxt}>Ajustes</Text>
       </Pressable>
 
       
@@ -53,16 +63,13 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
   },
   titulo: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 24,
-    color: '#1B3A6B',
   },
   boton: {
-    backgroundColor: '#1B3A6B',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,

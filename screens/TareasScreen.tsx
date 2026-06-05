@@ -7,6 +7,7 @@ import { RootStackParamList } from '../navigation/types';
 import { Tarea } from './Tipos'
 import { useState, useEffect} from 'react';
 import axios from 'axios';
+import { useTema } from '../context/TemaContext';
 
 
 //para el api.ts
@@ -30,6 +31,7 @@ export default function TareasScreen(
     const [tareas, setTareas] = useState<Tarea[]>([]);
     const [estado, setEstado] = useState<Estado>('cargando');
     const [nuevaTarea, setNuevaTarea] = useState('');   
+    const { colores, oscuro } = useTema();
 
     // Agregar al componente:
     const [editandoId, setEditandoId] = useState<string | null>(null);
@@ -61,10 +63,16 @@ export default function TareasScreen(
             setEstado('error');
         }
     } */
-    //Agregamos lo de la api
+    //Agregamos lo de la api --> no es lo de la api, no andaba lo del profe del pdf
     async function cargar(){
-        const res = await tareasApi.getAll();
-        setTareas(res.data);
+        setEstado('cargando');
+        try {
+            const res = await tareasApi.getAll();
+            setTareas(res.data);
+            setEstado('listo');
+        } catch {
+            setEstado('error');
+        }
     }
 
 
@@ -166,23 +174,26 @@ export default function TareasScreen(
     async function guardarEdicion() {
         await tareasApi.update(editandoId!, textoEdicion);
         await cargar();
+        //Para que vueva a parecer el boton de editar, sino se queda editando
+        setEditandoId(null);
     }
 
 
 
   return (
-    <View style={styles.container}>
-        <Text>Tareas %</Text>
+    <View style={[styles.container, { backgroundColor: colores.fondo }]}>
+        <Text style={{ color: colores.texto }}>Tareas %</Text>
 
 
         <TextInput
-            style={styles.input}
+            style={[styles.input, { color: colores.texto, borderColor: colores.inputBorder, backgroundColor: colores.inputBg }]}
             value={nuevaTarea}
             onChangeText={setNuevaTarea}
             placeholder='Nueva tarea...'
+            placeholderTextColor={oscuro ? '#999' : '#666'}
         />
         <Pressable
-            style={styles.boton}
+            style={[styles.boton, { backgroundColor: colores.boton }]}
             onPress={agregar}
         >
             <Text style={styles.botonTxt}>Agregar</Text>
@@ -194,10 +205,10 @@ export default function TareasScreen(
             data={tareas}
             keyExtractor={item => item.id}
             renderItem={({ item }) => (
-                <View style={styles.fila}>
+                <View style={[styles.fila, { backgroundColor: colores.fondo }]}>
 
 
-                    <Text style={styles.texto}>
+                    <Text style={[styles.texto, { color: colores.textoPrimario }]}>
                         {item.task}
                     </Text>
 
@@ -206,19 +217,19 @@ export default function TareasScreen(
                             <TextInput
                                 value={textoEdicion}
                                 onChangeText={setTextoEdicion}
-                                style={styles.inputEdicion}
+                                style={[styles.inputEdicion, { color: colores.texto, borderColor: colores.inputBorder, backgroundColor: colores.inputBg }]}
                             />
-                            <Pressable style={styles.btnGuardar} onPress={guardarEdicion}>
-                                <Text>Guardar</Text>
+                            <Pressable style={[styles.btnGuardar, { backgroundColor: colores.boton }]} onPress={guardarEdicion}>
+                                <Text style={{ color: colores.botonTexto }}>Guardar</Text>
                             </Pressable>
                         </>
                     ) : ( 
                         <>
-                            <Pressable style={styles.btnEditar} onPress={() => {
+                            <Pressable style={[styles.btnEditar, { backgroundColor: colores.boton }]} onPress={() => {
                                 setEditandoId(item.id);
                                 setTextoEdicion(item.task);
                             }}>
-                                <Text>Editar</Text>
+                                <Text style={{ color: colores.botonTexto }}>Editar</Text>
                             </Pressable>
                         </>
                     )}
@@ -237,7 +248,7 @@ export default function TareasScreen(
                 </View>
             )}
             ListEmptyComponent={
-                <Text>No hay tareas todavia</Text>
+                <Text style={{ color: colores.texto }}>No hay tareas todavia</Text>
             }
         />
 
@@ -245,7 +256,7 @@ export default function TareasScreen(
 
 
       <Pressable
-        style={styles.boton}
+        style={[styles.boton, { backgroundColor: colores.boton }]}
         onPress={() => navigation.goBack()}
       >
         <Text style={styles.botonTxt}>Volver</Text>
@@ -261,21 +272,17 @@ const styles = StyleSheet.create({
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: '#fff',
     },
     titulo: {
       fontSize: 28,
       fontWeight: 'bold',
-      color: '#1B3A6B',
       marginBottom: 8,
     },
     nota: {
       fontSize: 20,
-      color: '#444',
       marginBottom: 32,
     },
     boton: {
-      backgroundColor: '#37476F',
       paddingHorizontal: 24,
       paddingVertical: 12,
       borderRadius: 8,
@@ -290,53 +297,50 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#fff',
     },
     texto: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: '#1B3A6B',
         marginBottom: 8,
     },
     input: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#1B3A6B',
+        fontSize: 16,
+        borderWidth: 1,
         marginBottom: 8,
+        padding: 8,
+        borderRadius: 4,
+        width: '80%',
+    },
+    inputEdicion: {
+        fontSize: 16,
+        borderWidth: 1,
+        padding: 8,
+        borderRadius: 4,
+        marginBottom: 8,
+        width: '80%',
     },
     btnEliminar: {
       backgroundColor: '#ff6b6b',
       paddingHorizontal: 12,
       paddingVertical: 8,
       borderRadius: 4,
-        marginBottom: 28,
+      marginTop: 8,
     },
     btnEliminarTxt: {
-      color: '#000000',
-      fontSize: 16,
+      color: '#fff',
       fontWeight: 'bold',
-    },
-    inputEdicion: {
-      color: '#000000',
-      fontSize: 16,
-      fontWeight: 'bold',
-      borderWidth: 1,
-      borderColor: '#ccc',
-      paddingHorizontal: 8,
-      marginBottom: 8,
     },
     btnEditar: {
-      backgroundColor: '#4caf50',
-      paddingHorizontal: 12,
+      paddingHorizontal: 16,
       paddingVertical: 8,
       borderRadius: 4,
       marginBottom: 8,
     },
     btnGuardar: {
-      backgroundColor: '#2196F3',
-      paddingHorizontal: 12,
+      paddingHorizontal: 16,
       paddingVertical: 8,
       borderRadius: 4,
       marginBottom: 8,
     },
   });
+      

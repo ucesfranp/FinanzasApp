@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, FlatList } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import StackNavigator from './navigation/StackNavigator';
+import { TemaProvider } from './context/TemaContext';
 
 
 export default function App() {
@@ -19,10 +20,11 @@ export default function App() {
 
 
   return (
-
-    <NavigationContainer>
-      <StackNavigator />
-    </NavigationContainer>
+    <TemaProvider>
+      <NavigationContainer>
+        <StackNavigator />
+      </NavigationContainer>
+    </TemaProvider>
 
   );
 }

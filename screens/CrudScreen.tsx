@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { View, Text, Pressable, StyleSheet,ScrollView, ActivityIndicator,} from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
+import { useTema } from '../context/TemaContext';
 
 
 
@@ -26,6 +27,7 @@ export default function CrudScreen(
   const [todos, setTodos] = useState<Todo[] | null>(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { colores } = useTema();
 
   // Función para cargar todos los registros
   const cargarTodos = () => {
@@ -47,27 +49,27 @@ export default function CrudScreen(
 
   //
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colores.fondo }]}>
 
       {/* Este botón carga todos los registros */}
-      <Pressable style={styles.boton} onPress={cargarTodos}>
+      <Pressable style={[styles.boton, { backgroundColor: colores.boton }]} onPress={cargarTodos}>
         <Text style={styles.botonTxt}>Ver todos</Text>
       </Pressable>
 
       {/* Esto muestra el indicador de carga  */}
-      {cargando && <ActivityIndicator size="large" color="#1B3A6B" />}
+      {cargando && <ActivityIndicator size="large" color={colores.textoPrimario} />}
       {error && (
-        <Text style={styles.error}>Error: {error}</Text>
+        <Text style={[styles.error, { color: '#ff6b6b' }]}>Error: {error}</Text>
       )}
       {todos && (
       <ScrollView style={styles.lista}>
-        <Text style={styles.resumen}>
+        <Text style={[styles.resumen, { color: colores.texto }]}>
           {todos.length} registros recibidos
         </Text>
         {todos.slice(0, 10).map(item => (
-          <View key={item.id} style={styles.item}>
-            <Text>#{item.id} - {item.title}</Text>
-            <Text>{item.completed ? 'Completado' : 'Pendiente'}</Text>
+          <View key={item.id} style={[styles.item, { borderColor: colores.inputBorder, backgroundColor: colores.inputBg }]}>
+            <Text style={{ color: colores.texto }}>#{item.id} - {item.title}</Text>
+            <Text style={{ color: colores.texto }}>{item.completed ? 'Completado' : 'Pendiente'}</Text>
           </View>
         ))}
       </ScrollView>
@@ -75,10 +77,10 @@ export default function CrudScreen(
 
 
 
-      <Text>Volver al Home</Text>
+      <Text style={{ color: colores.texto }}>Volver al Home</Text>
 
       <Pressable
-        style={styles.boton}
+        style={[styles.boton, { backgroundColor: colores.boton }]}
         onPress={() => navigation.goBack()}
       >
         <Text style={styles.botonTxt}>Volver</Text>
@@ -121,10 +123,9 @@ const styles = StyleSheet.create({
 //Estos son los estilos que usamos 
 //Los puedo definir aca y usar en otro archivo ? respuesta: SI, pero no es lo ideal, lo mejor es definirlos en cada archivo, o crear un archivo de estilos compartidos
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16,  backgroundColor: '#fff' },
-  titulo: { fontSize: 24, fontWeight: 'bold',   color: '#1B3A6B', textAlign: 'center' },
+  container: { flex: 1, padding: 16 },
+  titulo: { fontSize: 24, fontWeight: 'bold', textAlign: 'center' },
   boton: {
-    backgroundColor: '#1B3A6B',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -132,12 +133,11 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   botonTxt: { color: '#fff', fontSize: 16,  fontWeight: 'bold' },
-  error: { color: '#c00', textAlign: 'center' },
+  error: { textAlign: 'center' },
   lista: { flex: 1, marginTop: 8 },
   resumen: { fontWeight: '600', marginBottom: 8 },
   item: {
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
+import { useTema } from '../context/TemaContext';
 
 // URL utilizada por los ejercicios
 const url = 'https://jsonplaceholder.typicode.com/posts/1';
@@ -17,6 +18,7 @@ export default function EjerciciosScreen() {
     const [titulo, setTitulo] = useState<string>('');
     const [cargando, setCargando] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const { colores } = useTema();
 
     // función única para cargar el título (usada por los botones Ej 2/3 y Ej 4)
     async function cargarTitulo() {
@@ -38,28 +40,28 @@ export default function EjerciciosScreen() {
     }
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.titulo}>Ejercicios</Text>
+        <View style={[styles.container, { backgroundColor: colores.fondo }]}>
+            <Text style={[styles.titulo, { color: colores.textoPrimario }]}>Ejercicios</Text>
 
-            <Pressable style={styles.boton} onPress={saludar}>
+            <Pressable style={[styles.boton, { backgroundColor: colores.boton }]} onPress={saludar}>
                 <Text style={styles.botonTxt}>Ej 1</Text>
             </Pressable>
 
-            <Pressable style={styles.boton} onPress={cargarTitulo}>
+            <Pressable style={[styles.boton, { backgroundColor: colores.boton }]} onPress={cargarTitulo}>
                 <Text style={styles.botonTxt}>Ej 2 & 3</Text>
             </Pressable>
 
-            <Pressable style={styles.boton} onPress={cargarTitulo}>
+            <Pressable style={[styles.boton, { backgroundColor: colores.boton }]} onPress={cargarTitulo}>
                 <Text style={styles.botonTxt}>Ej 4 - Cargar</Text>
             </Pressable>
 
-            {cargando && <ActivityIndicator size="large" color="#1B3A6B" style={{ marginTop: 20 }} />}
-            {error && <Text style={styles.error}>{error}</Text>}
+            {cargando && <ActivityIndicator size="large" color={colores.textoPrimario} style={{ marginTop: 20 }} />}
+            {error && <Text style={[styles.error, { color: '#ff6b6b' }]}>{error}</Text>}
 
             {!cargando && !error && titulo !== '' && (
                 <ScrollView style={styles.lista}>
-                    <Text style={styles.resumen}>Título recibido:</Text>
-                    <Text>{titulo}</Text>
+                    <Text style={[styles.resumen, { color: colores.texto }]}>Título recibido:</Text>
+                    <Text style={{ color: colores.texto }}>{titulo}</Text>
                 </ScrollView>
             )}
         </View>
@@ -67,10 +69,9 @@ export default function EjerciciosScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16,  backgroundColor: '#fff', alignItems: 'center' },
-  titulo: { fontSize: 24, fontWeight: 'bold',   color: '#1B3A6B', textAlign: 'center', marginBottom: 16 },
+  container: { flex: 1, padding: 16, alignItems: 'center' },
+  titulo: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 16 },
   boton: {
-    backgroundColor: '#1B3A6B',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -78,7 +79,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   botonTxt: { color: '#fff', fontSize: 16,  fontWeight: 'bold' },
-  error: { color: '#c00', textAlign: 'center', marginTop: 12 },
+  error: { textAlign: 'center', marginTop: 12 },
   lista: { flex: 1, marginTop: 12, width: '100%' },
   resumen: { fontWeight: '600', marginBottom: 8 },
 });
