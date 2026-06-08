@@ -5,12 +5,14 @@ import { useFinanzas } from '../context/FinanzasContext';
 import { useState, useEffect } from 'react';
 
 export default function AjustesFinanzasScreen() {
-    const { colores, oscuro, toggleTema } = useTema();
+    const { colores } = useTema();
     const { presupuesto, establecerPresupuesto } = useFinanzas();
     
     const [presupuestoNuevo, setPresupuestoNuevo] = useState(presupuesto.toString());
     const [editandoPresupuesto, setEditandoPresupuesto] = useState(false);
     const [guardando, setGuardando] = useState(false);
+    // Estado local para animar el switch sin cambiar el tema global
+    const [oscuro, setOscuro] = useState(false);
 
     useEffect(() => {
         setPresupuestoNuevo(presupuesto.toString());
@@ -60,7 +62,7 @@ export default function AjustesFinanzasScreen() {
                     </View>
                     <Switch
                         value={oscuro}
-                        onValueChange={(valor) => toggleTema(valor)}
+                        onValueChange={(valor) => setOscuro(valor)}
                         trackColor={{ false: '#ccc', true: colores.boton }}
                         thumbColor={oscuro ? colores.textoPrimario : '#f4f3f4'}
                     />
@@ -120,36 +122,15 @@ export default function AjustesFinanzasScreen() {
                 ) : (
                     <View>
                         <Text style={[styles.montoActual, { color: colores.texto }]}>
-                            ${presupuesto.toFixed(2)}
+                            {/* Para que el presupuesto se muestre con 500.000 en lugar de 500000 */}
+                            $ {presupuesto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {/* ${presupuesto.toFixed(2)} */}
                         </Text>
                         <Text style={[styles.descripcion, { color: colores.texto, opacity: 0.6 }]}>
                             Este es tu presupuesto mensual. Los gastos se comparan contra este monto.
                         </Text>
                     </View>
                 )}
-            </View>
-
-            {/* Sección Información */}
-            <View style={[styles.seccion, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }]}>
-                <Text style={[styles.tituloSeccion, { color: colores.textoPrimario }]}>Información</Text>
-                
-                <View style={styles.filaOpcion}>
-                    <View>
-                        <Text style={[styles.etiqueta, { color: colores.texto }]}>Versión</Text>
-                        <Text style={[styles.descripcion, { color: colores.texto, opacity: 0.6 }]}>
-                            1.0.0
-                        </Text>
-                    </View>
-                </View>
-
-                <View style={[styles.filaOpcion, { marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: colores.inputBorder }]}>
-                    <View>
-                        <Text style={[styles.etiqueta, { color: colores.texto }]}>Última actualización</Text>
-                        <Text style={[styles.descripcion, { color: colores.texto, opacity: 0.6 }]}>
-                            {new Date().toLocaleDateString('es-ES')}
-                        </Text>
-                    </View>
-                </View>
             </View>
 
             {/* Sección Datos */}

@@ -5,6 +5,7 @@ import { useFinanzas } from '../context/FinanzasContext';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useState, useEffect } from 'react';
 import { Transaccion } from './FinanzasTypes';
+import { showAlert } from '../services/alertUtils';
 
 export default function DetalleTransaccionScreen() {
     const route = useRoute();
@@ -66,7 +67,7 @@ export default function DetalleTransaccionScreen() {
     };
 
     const handleEliminar = () => {
-        Alert.alert(
+        showAlert(
             'Eliminar transacción',
             '¿Estás seguro?',
             [

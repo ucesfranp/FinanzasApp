@@ -1,8 +1,9 @@
-import { View, Text, StyleSheet, Pressable, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTema } from '../context/TemaContext';
 import { useFinanzas } from '../context/FinanzasContext';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useState } from 'react';
 
 type HomeStackParamList = {
     HomeFinanzas: undefined;
@@ -18,7 +19,9 @@ interface Props {
 
 export default function HomeFinanzasScreen({ navigation }: Props) {
     const { colores } = useTema();
-    const { transacciones, presupuesto, obtenerResumen } = useFinanzas();
+    const { transacciones, presupuesto, obtenerResumen, sincronizar } = useFinanzas();
+    const [movimientosCargados, setMovimientosCargados] = useState(false);
+    const [cargandoMovimientos, setCargandoMovimientos] = useState(false);
 
     const ahora = new Date();
     const mes = ahora.getMonth();
@@ -26,6 +29,18 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
     const resumen = obtenerResumen(mes, año);
 
     const ultimos5 = transacciones.slice(0, 5);
+
+    const handleCargarMovimientos = async () => {
+        try {
+            setCargandoMovimientos(true);
+            await sincronizar();
+            setMovimientosCargados(true);
+        } catch (error) {
+            Alert.alert('Error', 'No se pudieron cargar los movimientos');
+        } finally {
+            setCargandoMovimientos(false);
+        }
+    };
 
     const porcentajeColor = resumen.disponible < 0 ? '#FF6B6B' : resumen.disponible < presupuesto * 0.2 ? '#FFE66D' : '#4ECDC4';
 
@@ -45,9 +60,9 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
             {/* Tarjeta principal - Disponible */}
             <View style={[styles.tarjetaPrincipal, { backgroundColor: porcentajeColor }]}>
                 <Text style={styles.etiqueta}>Disponible este mes</Text>
-                <Text style={styles.monto}>${resumen.disponible.toFixed(2)}</Text>
+                <Text style={styles.monto}>${resumen.disponible.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
                 <Text style={styles.subTexto}>
-                    Presupuesto: ${resumen.presupuesto.toFixed(2)}
+                    Presupuesto: ${presupuesto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </Text>
             </View>
 
@@ -69,13 +84,13 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
                     <View style={styles.resumenItem}>
                         <Text style={[styles.resumenLabel, { color: colores.texto }]}>Ingresos</Text>
                         <Text style={[styles.resumenMonto, { color: '#4ECDC4' }]}>
-                            +${resumen.totalIngresos.toFixed(2)}
+                            +${resumen.totalIngresos.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </Text>
                     </View>
                     <View style={styles.resumenItem}>
                         <Text style={[styles.resumenLabel, { color: colores.texto }]}>Gastos</Text>
                         <Text style={[styles.resumenMonto, { color: '#FF6B6B' }]}>
-                            -${resumen.totalGastos.toFixed(2)}
+                            -${resumen.totalGastos.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </Text>
                     </View>
                 </View>
@@ -100,31 +115,53 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
             <View style={styles.seccion}>
                 <Text style={[styles.tituloSeccion, { color: colores.textoPrimario }]}>Últimos Movimientos</Text>
                 
-                {ultimos5.length === 0 ? (
-                    <Text style={[styles.textoVacio, { color: colores.texto }]}>No hay movimientos este mes</Text>
+                {!movimientosCargados ? (
+                    <Pressable 
+                        style={[styles.botonCargar, { backgroundColor: colores.boton }]}
+                        onPress={handleCargarMovimientos}
+                        disabled={cargandoMovimientos}
+                    >
+                        {cargandoMovimientos ? (
+                            <>
+                                <ActivityIndicator size="small" color="white" />
+                                <Text style={styles.textoBotonCargar}>Cargando movimientos...</Text>
+                            </>
+                        ) : (
+                            <>
+                                <Ionicons name="download-outline" size={20} color="white" />
+                                <Text style={styles.textoBotonCargar}>Cargar últimos movimientos</Text>
+                            </>
+                        )}
+                    </Pressable>
                 ) : (
-                    ultimos5.map((transaccion) => (
-                        <Pressable 
-                            key={transaccion.id}
-                            style={[styles.movimiento, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }]}
-                            onPress={() => navigation.navigate('DetalleTransaccion', { transaccionId: transaccion.id })}
-                        >
-                            <View style={styles.movimientoInfo}>
-                                <Text style={[styles.movimientoDesc, { color: colores.texto }]}>
-                                    {transaccion.descripcion}
-                                </Text>
-                                <Text style={[styles.movimientoFecha, { color: colores.texto, opacity: 0.6 }]}>
-                                    {new Date(transaccion.fecha).toLocaleDateString('es-ES')}
-                                </Text>
-                            </View>
-                            <Text style={[
-                                styles.movimientoMonto,
-                                { color: transaccion.tipo === 'ingreso' ? '#4ECDC4' : '#FF6B6B' }
-                            ]}>
-                                {transaccion.tipo === 'ingreso' ? '+' : '-'}${transaccion.monto.toFixed(2)}
-                            </Text>
-                        </Pressable>
-                    ))
+                    <>
+                        {ultimos5.length === 0 ? (
+                            <Text style={[styles.textoVacio, { color: colores.texto }]}>No hay movimientos este mes</Text>
+                        ) : (
+                            ultimos5.map((transaccion) => (
+                                <Pressable 
+                                    key={transaccion.id}
+                                    style={[styles.movimiento, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }]}
+                                    onPress={() => navigation.navigate('DetalleTransaccion', { transaccionId: transaccion.id })}
+                                >
+                                    <View style={styles.movimientoInfo}>
+                                        <Text style={[styles.movimientoDesc, { color: colores.texto }]}>
+                                            {transaccion.descripcion}
+                                        </Text>
+                                        <Text style={[styles.movimientoFecha, { color: colores.texto, opacity: 0.6 }]}>
+                                            {new Date(transaccion.fecha).toLocaleDateString('es-ES')}
+                                        </Text>
+                                    </View>
+                                    <Text style={[
+                                        styles.movimientoMonto,
+                                        { color: transaccion.tipo === 'ingreso' ? '#4ECDC4' : '#FF6B6B' }
+                                    ]}>
+                                        {transaccion.tipo === 'ingreso' ? '+' : '-'}${transaccion.monto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </Text>
+                                </Pressable>
+                            ))
+                        )}
+                    </>
                 )}
             </View>
 
@@ -261,5 +298,18 @@ const styles = StyleSheet.create({
     movimientoMonto: {
         fontSize: 14,
         fontWeight: 'bold',
+    },
+    botonCargar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 16,
+        borderRadius: 8,
+        gap: 8,
+    },
+    textoBotonCargar: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: '600',
     },
 });

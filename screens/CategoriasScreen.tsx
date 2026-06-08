@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTema } from '../context/TemaContext';
 import { useFinanzas } from '../context/FinanzasContext';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { showAlert } from '../services/alertUtils';
 
 type CategoriasStackParamList = {
     CategoriasList: undefined;
@@ -21,7 +22,7 @@ export default function CategoriasScreen({ navigation }: Props) {
     const { categorias, eliminarCategoria } = useFinanzas();
 
     const handleEliminar = (id: number, nombre: string) => {
-        Alert.alert(
+        showAlert(
             'Eliminar categoría',
             `¿Estás seguro de que quieres eliminar "${nombre}"?`,
             [
