@@ -15,4 +15,6 @@ export type RootStackParamList = {
     Ejercicios: undefined;
 
     Ajustes: undefined;
+
+    TareasLocal: undefined; // <- nueva
 };

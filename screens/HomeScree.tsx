@@ -71,6 +71,13 @@ export default function HomeScreen({ navigation }: Props) {
         <Text style={styles.botonTxt}>Ajustes</Text>
       </Pressable>
 
+      <Pressable
+        style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
+        onPress={() => navigation.navigate('TareasLocal')}
+      >
+        <Text style={styles.botonTxt}>Tareas Locales</Text>
+      </Pressable>
+
       
     </View>
   );
