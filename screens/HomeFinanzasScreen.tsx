@@ -4,7 +4,8 @@ import { useTema } from '../context/TemaContext';
 import { useFinanzas } from '../context/FinanzasContext';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { leerPrefs } from '../services/preferencias';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -25,6 +26,8 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
 
     const ultimos5 = transacciones.slice(0, 5);
 
+    const [nombre, setNombre] = useState(''); // estado para guardar el nombre leído de las preferencias --> nombre es el estado, setNombre es la función para actualizarlo, y '' es el valor inicial (vacío)
+
     const handleCargarMovimientos = async () => {
         try {
             setCargandoMovimientos(true);
@@ -38,6 +41,16 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
     };
 
     const porcentajeColor = resumen.disponible < 0 ? '#FF6B6B' : resumen.disponible < presupuesto * 0.2 ? '#FFE66D' : '#4ECDC4';
+
+    useEffect(() => {
+        async function cargarNombre() {
+            const prefs = await leerPrefs();
+            if (prefs && prefs.nombre) { // esto se lee así: si prefs existe y tiene una propiedad nombre, entonces...
+                setNombre(prefs.nombre); // actualizamos el estado con el nombre leído de las preferencias
+            }
+        }
+        cargarNombre();
+    }, []);
 
     return (
         <View style={[{ flex: 1, backgroundColor: colores.fondo, paddingTop: 50 }]}>
@@ -81,7 +94,10 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
 
                 {/* Tarjeta principal - Disponible */}
                 <View style={[styles.tarjetaPrincipal, { backgroundColor: porcentajeColor }]}>
-                    <Text style={styles.etiqueta}>Disponible este mes</Text>
+                    <Text style={[styles.titulo, { color: colores.textoPrimario }]}>
+                        {nombre ? `¡Hola ${nombre}!` : 'Pantalla Home'} {/* Si nombre tiene algo, mostramos "¡Hola {nombre}!", sino mostramos "Pantalla Home" */}
+                    </Text>
+                    <Text style={styles.etiqueta}>Tu disponible de este mes</Text>
                     <Text style={styles.monto}>${resumen.disponible.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
                     <Text style={styles.subTexto}>
                         Presupuesto: ${presupuesto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

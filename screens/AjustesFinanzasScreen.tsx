@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { NavigationProp } from '@react-navigation/native';
+import { guardarPrefs, leerPrefs } from "../services/preferencias";
 
 type Props = {
     navigation: NavigationProp<RootStackParamList>;
@@ -20,6 +21,7 @@ export default function AjustesFinanzasScreen({ navigation }: Props) {
     const [guardando, setGuardando] = useState(false);
     // Estado local para animar el switch sin cambiar el tema global
     const [oscuro, setOscuro] = useState(false);
+    const [nombre, setNombre] = useState('');
 
     useEffect(() => {
         setPresupuestoNuevo(presupuesto.toString());
@@ -48,6 +50,11 @@ export default function AjustesFinanzasScreen({ navigation }: Props) {
         setPresupuestoNuevo(presupuesto.toString());
         setEditandoPresupuesto(false);
     };
+
+    async function handleNombre(text: string) {
+        setNombre(text);
+        await guardarPrefs({ nombre: text, temaOscuro: oscuro } as any);
+    }
 
     return (
         <View style={[{ flex: 1, backgroundColor: colores.fondo, paddingTop: 50 }]}>
@@ -78,6 +85,17 @@ export default function AjustesFinanzasScreen({ navigation }: Props) {
                 {/* Header */}
                 <View style={styles.header}>
                     <Text style={[styles.titulo, { color: colores.textoPrimario }]}>Ajustes</Text>
+                </View>
+
+                <View style={[styles.seccion, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }]}>
+                    <Text style={[styles.tituloSeccion, { color: colores.textoPrimario }]}>Nombre</Text>
+                    <TextInput
+                        style={[styles.input, { borderColor: colores.inputBorder, backgroundColor: colores.inputBg, color: colores.texto }]}
+                        value={nombre}
+                        onChangeText={handleNombre}
+                        placeholder="Ingresa tu nombre"
+                        placeholderTextColor={oscuro ? '#999' : '#666'}
+                    />
                 </View>
 
                 {/* Sección Apariencia */}
@@ -283,4 +301,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
+    label: { fontSize: 16, marginBottom: 8 },
+    input: { borderWidth: 1, padding: 8, borderRadius: 4, marginBottom: 16 },
 });
