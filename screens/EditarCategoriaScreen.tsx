@@ -16,7 +16,7 @@ export default function EditarCategoriaScreen() {
     const { colores } = useTema();
     const { categorias, editarCategoria } = useFinanzas();
 
-    const categoriaId = (route.params as any)?.categoriaId;
+    const categoriaId = (route.params as any)?.id;
     const categoria = categorias.find(c => c.id === categoriaId);
 
     const [nombre, setNombre] = useState(categoria?.nombre || '');
@@ -65,10 +65,10 @@ export default function EditarCategoriaScreen() {
     };
 
     return (
-        <ScrollView style={[styles.container, { backgroundColor: colores.fondo }]}>
+        <ScrollView style={[styles.container, { backgroundColor: colores.fondo, paddingTop: 80 }]}>
             {/* Nombre */}
             <View style={styles.seccion}>
-                <Text style={[styles.label, { color: colores.textoPrimario }]}>Nombre</Text>
+                <Text style={[styles.label, { color: colores.textoPrimario }]}>Nombre de categoría</Text>
                 <TextInput
                     placeholder="Ej: Café"
                     placeholderTextColor={colores.texto}

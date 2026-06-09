@@ -6,6 +6,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { useState, useEffect } from 'react';
 import { Transaccion } from './FinanzasTypes';
 import { showAlert } from '../services/alertUtils';
+import { formatDateString } from '../services/dateUtils';
 
 export default function DetalleTransaccionScreen() {
     const route = useRoute();
@@ -13,7 +14,7 @@ export default function DetalleTransaccionScreen() {
     const { colores } = useTema();
     const { transacciones, categorias, editarTransaccion, eliminarTransaccion } = useFinanzas();
 
-    const transaccionId = (route.params as any)?.transaccionId;
+    const transaccionId = (route.params as any)?.id;
     const transaccion = transacciones.find(t => t.id === transaccionId);
 
     const [editando, setEditando] = useState(false);
@@ -53,9 +54,12 @@ export default function DetalleTransaccionScreen() {
         try {
             setGuardando(true);
             await editarTransaccion(transaccion.id, {
-                ...transaccion,
                 descripcion: descripcion.trim(),
                 monto: montoNum,
+                tipo: transaccion.tipo,
+                categoria_id: transaccion.categoria_id,
+                fecha: transaccion.fecha,
+                api_id: transaccion.api_id,
             });
             Alert.alert('Éxito', 'Transacción actualizada');
             setEditando(false);
@@ -89,25 +93,18 @@ export default function DetalleTransaccionScreen() {
         );
     };
 
-    const fecha = new Date(transaccion.fecha);
-    const fechaFormato = fecha.toLocaleDateString('es-ES', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-    });
+    const fecha = transaccion.fecha;
+    const fechaFormato = formatDateString(fecha, 'datetime');
 
     return (
-        <ScrollView style={[styles.container, { backgroundColor: colores.fondo }]}>
+        <ScrollView style={[styles.container, { backgroundColor: colores.fondo, paddingTop: 80 }]}>
             {/* Monto grande */}
             <View style={[styles.tarjeta, { backgroundColor: categoria?.color || '#C7CEEA' }]}>
                 <Text style={styles.tipo}>
                     {transaccion.tipo === 'ingreso' ? 'INGRESO' : 'GASTO'}
                 </Text>
                 <Text style={styles.montoGrande}>
-                    {transaccion.tipo === 'ingreso' ? '+' : '-'}${transaccion.monto.toFixed(2)}
+                    {transaccion.tipo === 'ingreso' ? '+' : '-'}${transaccion.monto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </Text>
                 <Text style={styles.categoria}>{categoria?.nombre}</Text>
             </View>
@@ -147,7 +144,7 @@ export default function DetalleTransaccionScreen() {
                         />
                     </View>
                 ) : (
-                    <Text style={[styles.valor, { color: colores.texto }]}>${transaccion.monto.toFixed(2)}</Text>
+                    <Text style={[styles.valor, { color: colores.texto }]}>${transaccion.monto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
                 )}
             </View>
 

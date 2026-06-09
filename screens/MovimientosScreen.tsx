@@ -2,17 +2,12 @@ import { View, Text, StyleSheet, FlatList, Pressable, TextInput, ScrollView, Ref
 import { Ionicons } from '@expo/vector-icons';
 import { useTema } from '../context/TemaContext';
 import { useFinanzas } from '../context/FinanzasContext';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation/types';
 import { Transaccion } from './FinanzasTypes';
 
-type MovimientosStackParamList = {
-    MovimientosList: undefined;
-    DetalleTransaccion: { transaccionId: number };
-    AgregarTransaccion: undefined;
-};
-
-type NavigationProp = NativeStackNavigationProp<MovimientosStackParamList, 'MovimientosList'>;
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Movimientos'>;
 
 interface Props {
     navigation: NavigationProp;
@@ -30,7 +25,7 @@ export default function MovimientosScreen({ navigation }: Props) {
         const coincideBusqueda = t.descripcion.toLowerCase().includes(busqueda.toLowerCase());
         const coincideCategoria = filtroCategoria === null || t.categoria_id === filtroCategoria;
         const coincideTipo = filtroTipo === 'todos' || t.tipo === filtroTipo;
-        
+
         return coincideBusqueda && coincideCategoria && coincideTipo;
     });
 
@@ -51,11 +46,36 @@ export default function MovimientosScreen({ navigation }: Props) {
     };
 
     return (
-        <View style={[styles.container, { backgroundColor: colores.fondo }]}>
+        <View style={[styles.container, { backgroundColor: colores.fondo, paddingTop: 50 }]}>
+            
+            {/* Botones de navegación */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 10 }}>
+                <Pressable
+                    style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
+                    onPress={() => navigation.navigate('Home')}
+                >
+                    <Text style={styles.botonTxt}>Home</Text>
+                </Pressable>
+                <Pressable
+                    style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
+                    onPress={() => navigation.navigate('Categorias')}
+                >
+                    <Text style={styles.botonTxt}>Categorias</Text>
+                </Pressable>
+                <Pressable
+                    style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
+                    onPress={() => navigation.navigate('Ajustes')}
+                >
+                    <Text style={styles.botonTxt}>Ajustes</Text>
+                </Pressable>
+            </View>
+
+
+
             {/* Header */}
             <View style={styles.header}>
                 <Text style={[styles.titulo, { color: colores.textoPrimario }]}>Movimientos</Text>
-                <Pressable 
+                <Pressable
                     style={[styles.botonAgregar, { backgroundColor: colores.boton }]}
                     onPress={() => navigation.navigate('AgregarTransaccion')}
                 >
@@ -76,7 +96,7 @@ export default function MovimientosScreen({ navigation }: Props) {
             </View>
 
             {/* Filtros */}
-            <View 
+            <View
                 style={[
                     styles.filtros,
                     {
@@ -85,7 +105,7 @@ export default function MovimientosScreen({ navigation }: Props) {
                     }
                 ]}
             >
-                <Pressable 
+                <Pressable
                     style={[
                         styles.botonFiltro,
                         filtroTipo === 'todos' && { backgroundColor: colores.textoPrimario }
@@ -100,7 +120,7 @@ export default function MovimientosScreen({ navigation }: Props) {
                     </Text>
                 </Pressable>
 
-                <Pressable 
+                <Pressable
                     style={[
                         styles.botonFiltro,
                         filtroTipo === 'ingreso' && { backgroundColor: '#4ECDC4' }
@@ -115,7 +135,7 @@ export default function MovimientosScreen({ navigation }: Props) {
                     </Text>
                 </Pressable>
 
-                <Pressable 
+                <Pressable
                     style={[
                         styles.botonFiltro,
                         filtroTipo === 'gasto' && { backgroundColor: '#FF6B6B' }
@@ -131,7 +151,7 @@ export default function MovimientosScreen({ navigation }: Props) {
                 </Pressable>
 
                 {filtroCategoria !== null && (
-                    <Pressable 
+                    <Pressable
                         style={[
                             styles.botonFiltro,
                             { backgroundColor: obtenerColorCategoria(filtroCategoria), opacity: 0.8 }
@@ -158,12 +178,12 @@ export default function MovimientosScreen({ navigation }: Props) {
                     data={transaccionesFiltradas}
                     keyExtractor={(item) => item.id.toString()}
                     renderItem={({ item }) => (
-                        <Pressable 
+                        <Pressable
                             style={[
-                                styles.itemMovimiento, 
+                                styles.itemMovimiento,
                                 { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }
                             ]}
-                            onPress={() => navigation.navigate('DetalleTransaccion', { transaccionId: item.id })}
+                            onPress={() => navigation.navigate('DetalleTransaccion', { id: item.id })}
                         >
                             <View style={[
                                 styles.iconoCategoria,
@@ -178,20 +198,20 @@ export default function MovimientosScreen({ navigation }: Props) {
                                     {item.descripcion}
                                 </Text>
                                 <Text style={[styles.categoria, { color: colores.texto, opacity: 0.6 }]}>
-                                    {obtenerNombreCategoria(item.categoria_id)} • {new Date(item.fecha).toLocaleDateString('es-ES')}
+                                    {obtenerNombreCategoria(item.categoria_id)} • {item.fecha.split('T')[0]}
                                 </Text>
                             </View>
                             <Text style={[
                                 styles.monto,
                                 { color: item.tipo === 'ingreso' ? '#4ECDC4' : '#FF6B6B' }
                             ]}>
-                                {item.tipo === 'ingreso' ? '+' : '-'}${item.monto.toFixed(2)}
+                                {item.tipo === 'ingreso' ? '+' : '-'}${item.monto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </Text>
                         </Pressable>
                     )}
                     refreshControl={
-                        <RefreshControl 
-                            refreshing={refrescando} 
+                        <RefreshControl
+                            refreshing={refrescando}
                             onRefresh={handleRefresh}
                             tintColor={colores.textoPrimario}
                         />
@@ -207,7 +227,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         paddingHorizontal: 5,
-        paddingTop: 60,
     },
     header: {
         flexDirection: 'row',
@@ -311,5 +330,15 @@ const styles = StyleSheet.create({
     textoVacio: {
         fontSize: 16,
         marginTop: 12,
+    },
+    boton: {
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        borderRadius: 8,
+    },
+    botonTxt: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });

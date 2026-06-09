@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useContext, useCallback } fr
 import { useSQLiteContext } from 'expo-sqlite';
 import { Transaccion, Categoria, ResumenMensual } from '../screens/FinanzasTypes';
 import { transaccionesApi } from '../services/transaccionesApi';
+import { getCurrentDateString, getMonthFromDateString, getYearFromDateString } from '../services/dateUtils';
 
 interface FinanzasContextType {
     transacciones: Transaccion[];
@@ -22,10 +23,11 @@ interface FinanzasContextType {
     
     // Métodos para preferencias
     establecerPresupuesto: (monto: number) => Promise<void>;
-    
-    // Métodos de utilidad
     obtenerResumen: (mes: number, año: number) => ResumenMensual;
+    
+    // Métodos para sincronización
     sincronizar: () => Promise<void>;
+    cargarDelMockAPI: () => Promise<void>;
 }
 
 const FinanzasContext = createContext<FinanzasContextType | undefined>(undefined);
@@ -47,12 +49,7 @@ export const FinanzasProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Cargar datos iniciales
-    useEffect(() => {
-        cargarDatos();
-    }, []);
-
-    async function cargarDatos() {
+    const cargarDatos = useCallback(async () => {
         try {
             setCargando(true);
             setError(null);
@@ -97,7 +94,12 @@ export const FinanzasProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         } finally {
             setCargando(false);
         }
-    }
+    }, [db]);
+
+    // Cargar datos iniciales
+    useEffect(() => {
+        cargarDatos();
+    }, [cargarDatos]);
 
     const agregarTransaccion = useCallback(async (transaccion: Omit<Transaccion, 'id' | 'api_id'>) => {
         try {
@@ -218,8 +220,7 @@ export const FinanzasProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     const obtenerResumen = useCallback((mes: number, año: number): ResumenMensual => {
         const transaccionesMes = transacciones.filter(t => {
-            const fecha = new Date(t.fecha);
-            return fecha.getMonth() === mes && fecha.getFullYear() === año;
+            return getMonthFromDateString(t.fecha) === mes && getYearFromDateString(t.fecha) === año;
         });
 
         const totalIngresos = transaccionesMes
@@ -247,6 +248,59 @@ export const FinanzasProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         await cargarDatos();
     }, []);
 
+    const cargarDelMockAPI = useCallback(async () => {
+        try {
+            setCargando(true);
+            setError(null);
+            
+            // Obtener transacciones del mockapi
+            const response = await transaccionesApi.getAll();
+            const datosDelAPI = response.data;
+            const fechaActual = getCurrentDateString();
+            
+            // Guardar cada transacción en la BD local con fecha actual
+            for (const transaccion of datosDelAPI) {
+                try {
+                    await db.runAsync(
+                        `INSERT OR IGNORE INTO transacciones (id, descripcion, monto, tipo, categoria_id, fecha, api_id) 
+                         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                        [
+                            transaccion.id,
+                            transaccion.descripcion,
+                            transaccion.monto,
+                            transaccion.tipo,
+                            transaccion.categoria_id,
+                            fechaActual,
+                            transaccion.api_id || transaccion.id,
+                        ]
+                    );
+                } catch (err) {
+                    // Si el registro ya existe, intentar actualizar con fecha actual
+                    await db.runAsync(
+                        `UPDATE transacciones SET descripcion = ?, monto = ?, tipo = ?, categoria_id = ?, fecha = ? 
+                         WHERE id = ?`,
+                        [
+                            transaccion.descripcion,
+                            transaccion.monto,
+                            transaccion.tipo,
+                            transaccion.categoria_id,
+                            fechaActual,
+                            transaccion.id
+                        ]
+                    );
+                }
+            }
+            
+            // Recargar datos locales
+            await cargarDatos();
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Error al cargar del mockapi');
+            throw err;
+        } finally {
+            setCargando(false);
+        }
+    }, [db, cargarDatos]);
+
     return (
         <FinanzasContext.Provider value={{
             transacciones,
@@ -263,6 +317,7 @@ export const FinanzasProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             establecerPresupuesto,
             obtenerResumen,
             sincronizar,
+            cargarDelMockAPI,
         }}>
             {children}
         </FinanzasContext.Provider>

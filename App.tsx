@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import BottomTabNavigator from './navigation/BottomTabNavigator';
+import StackNavigator from './navigation/StackNavigator';
 import { TemaProvider } from './context/TemaContext';
 import { FinanzasProvider } from './context/FinanzasContext';
 import { SQLiteProvider } from 'expo-sqlite';
@@ -16,7 +16,7 @@ export default function App() {
       >
         <FinanzasProvider>
           <NavigationContainer>
-            <BottomTabNavigator />
+            <StackNavigator />
           </NavigationContainer>
         </FinanzasProvider>
       </SQLiteProvider>

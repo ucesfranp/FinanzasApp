@@ -4,6 +4,7 @@ import { useTema } from '../context/TemaContext';
 import { useFinanzas } from '../context/FinanzasContext';
 import { useState } from 'react';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { getCurrentDateString } from '../services/dateUtils';
 
 type AgregarStackParamList = {
     AgregarTransaccion: undefined;
@@ -49,7 +50,7 @@ export default function AgregarTransaccionScreen({ navigation }: Props) {
                 monto: montoNum,
                 tipo,
                 categoria_id: categoriaId,
-                fecha: new Date().toISOString(),
+                fecha: getCurrentDateString(),
             });
 
             Alert.alert('Éxito', 'Transacción guardada');
@@ -62,10 +63,10 @@ export default function AgregarTransaccionScreen({ navigation }: Props) {
     };
 
     return (
-        <ScrollView style={[styles.container, { backgroundColor: colores.fondo }]}>
+        <ScrollView style={[styles.container, { backgroundColor: colores.fondo, paddingTop: 70 }]}>
             {/* Tipo de transacción */}
             <View style={styles.seccion}>
-                <Text style={[styles.label, { color: colores.textoPrimario }]}>Tipo</Text>
+                <Text style={[styles.label, { color: colores.textoPrimario }]}>Tipo de movimiento</Text>
                 <View style={styles.botonesTipo}>
                     <Pressable 
                         style={[

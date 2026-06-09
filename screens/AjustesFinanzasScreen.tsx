@@ -3,11 +3,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTema } from '../context/TemaContext';
 import { useFinanzas } from '../context/FinanzasContext';
 import { useState, useEffect } from 'react';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation/types';
+import { NavigationProp } from '@react-navigation/native';
 
-export default function AjustesFinanzasScreen() {
+type Props = {
+    navigation: NavigationProp<RootStackParamList>;
+};
+
+export default function AjustesFinanzasScreen({ navigation }: Props) {
     const { colores } = useTema();
     const { presupuesto, establecerPresupuesto } = useFinanzas();
-    
+
     const [presupuestoNuevo, setPresupuestoNuevo] = useState(presupuesto.toString());
     const [editandoPresupuesto, setEditandoPresupuesto] = useState(false);
     const [guardando, setGuardando] = useState(false);
@@ -43,120 +50,145 @@ export default function AjustesFinanzasScreen() {
     };
 
     return (
-        <ScrollView style={[styles.container, { backgroundColor: colores.fondo }]}>
-            {/* Header */}
-            <View style={styles.header}>
-                <Text style={[styles.titulo, { color: colores.textoPrimario }]}>Ajustes</Text>
-            </View>
-
-            {/* Sección Apariencia */}
-            <View style={[styles.seccion, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }]}>
-                <Text style={[styles.tituloSeccion, { color: colores.textoPrimario }]}>Apariencia</Text>
-                
-                <View style={styles.filaOpcion}>
-                    <View>
-                        <Text style={[styles.etiqueta, { color: colores.texto }]}>Modo oscuro</Text>
-                        <Text style={[styles.descripcion, { color: colores.texto, opacity: 0.6 }]}>
-                            {oscuro ? 'Activado' : 'Desactivado'}
-                        </Text>
-                    </View>
-                    <Switch
-                        value={oscuro}
-                        onValueChange={(valor) => setOscuro(valor)}
-                        trackColor={{ false: '#ccc', true: colores.boton }}
-                        thumbColor={oscuro ? colores.textoPrimario : '#f4f3f4'}
-                    />
-                </View>
-            </View>
-
-            {/* Sección Presupuesto */}
-            <View style={[styles.seccion, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }]}>
-                <View style={styles.headerSeccion}>
-                    <Text style={[styles.tituloSeccion, { color: colores.textoPrimario }]}>Presupuesto Mensual</Text>
-                    {!editandoPresupuesto && (
-                        <Pressable 
-                            onPress={() => setEditandoPresupuesto(true)}
-                        >
-                            <Ionicons name="pencil" size={20} color={colores.textoPrimario} />
-                        </Pressable>
-                    )}
-                </View>
-
-                {editandoPresupuesto ? (
-                    <>
-                        <View style={[styles.inputMonto, { borderColor: colores.inputBorder }]}>
-                            <Text style={[styles.simbolo, { color: colores.texto }]}>$</Text>
-                            <TextInput
-                                placeholder="0.00"
-                                placeholderTextColor={colores.texto}
-                                style={[
-                                    styles.inputNumero,
-                                    { color: colores.texto }
-                                ]}
-                                value={presupuestoNuevo}
-                                onChangeText={setPresupuestoNuevo}
-                                keyboardType="decimal-pad"
-                                editable={!guardando}
-                            />
-                        </View>
-                        
-                        <View style={[styles.botonesMonto, { marginTop: 12 }]}>
-                            <Pressable 
-                                style={[styles.botonMonto, { backgroundColor: colores.inputBorder }]}
-                                onPress={handleCancelarPresupuesto}
-                                disabled={guardando}
-                            >
-                                <Text style={[styles.textoBotonMonto, { color: colores.texto }]}>Cancelar</Text>
-                            </Pressable>
-                            <Pressable 
-                                style={[styles.botonMonto, { backgroundColor: colores.boton }]}
-                                onPress={handleGuardarPresupuesto}
-                                disabled={guardando}
-                            >
-                                <Text style={styles.textoBotonMontoGuardar}>
-                                    {guardando ? 'Guardando...' : 'Guardar'}
-                                </Text>
-                            </Pressable>
-                        </View>
-                    </>
-                ) : (
-                    <View>
-                        <Text style={[styles.montoActual, { color: colores.texto }]}>
-                            {/* Para que el presupuesto se muestre con 500.000 en lugar de 500000 */}
-                            $ {presupuesto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            {/* ${presupuesto.toFixed(2)} */}
-                        </Text>
-                        <Text style={[styles.descripcion, { color: colores.texto, opacity: 0.6 }]}>
-                            Este es tu presupuesto mensual. Los gastos se comparan contra este monto.
-                        </Text>
-                    </View>
-                )}
-            </View>
-
-            {/* Sección Datos */}
-            <View style={[styles.seccion, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }]}>
-                <Text style={[styles.tituloSeccion, { color: colores.textoPrimario }]}>Datos</Text>
-                
-                <Pressable style={styles.filaOpcion}>
-                    <View>
-                        <Text style={[styles.etiqueta, { color: colores.texto }]}>Privacidad y seguridad</Text>
-                        <Text style={[styles.descripcion, { color: colores.texto, opacity: 0.6 }]}>
-                            Tu información se guarda localmente
-                        </Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={20} color={colores.texto} />
+        <View style={[{ flex: 1, backgroundColor: colores.fondo, paddingTop: 50 }]}>
+            
+            {/* Botones de navegación */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 10 }}>
+                <Pressable
+                    style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
+                    onPress={() => navigation.navigate('Home')}
+                >
+                    <Text style={styles.botonTxt}>Home</Text>
+                </Pressable>
+                <Pressable
+                    style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
+                    onPress={() => navigation.navigate('Movimientos')}
+                >
+                    <Text style={styles.botonTxt}>Movimientos</Text>
+                </Pressable>
+                <Pressable
+                    style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
+                    onPress={() => navigation.navigate('Ajustes')}
+                >
+                    <Text style={styles.botonTxt}>Ajustes</Text>
                 </Pressable>
             </View>
 
-            <View style={{ height: 20 }} />
-        </ScrollView>
+            <ScrollView style={[styles.container, { backgroundColor: colores.fondo }]}>
+                {/* Header */}
+                <View style={styles.header}>
+                    <Text style={[styles.titulo, { color: colores.textoPrimario }]}>Ajustes</Text>
+                </View>
+
+                {/* Sección Apariencia */}
+                <View style={[styles.seccion, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }]}>
+                    <Text style={[styles.tituloSeccion, { color: colores.textoPrimario }]}>Apariencia</Text>
+
+                    <View style={styles.filaOpcion}>
+                        <View>
+                            <Text style={[styles.etiqueta, { color: colores.texto }]}>Modo oscuro</Text>
+                            <Text style={[styles.descripcion, { color: colores.texto, opacity: 0.6 }]}>
+                                {oscuro ? 'Activado' : 'Desactivado'}
+                            </Text>
+                        </View>
+                        <Switch
+                            value={oscuro}
+                            onValueChange={(valor) => setOscuro(valor)}
+                            trackColor={{ false: '#ccc', true: colores.boton }}
+                            thumbColor={oscuro ? colores.textoPrimario : '#f4f3f4'}
+                        />
+                    </View>
+                </View>
+
+                {/* Sección Presupuesto */}
+                <View style={[styles.seccion, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }]}>
+                    <View style={styles.headerSeccion}>
+                        <Text style={[styles.tituloSeccion, { color: colores.textoPrimario }]}>Presupuesto Mensual</Text>
+                        {!editandoPresupuesto && (
+                            <Pressable
+                                onPress={() => setEditandoPresupuesto(true)}
+                            >
+                                <Ionicons name="pencil" size={20} color={colores.textoPrimario} />
+                            </Pressable>
+                        )}
+                    </View>
+
+                    {editandoPresupuesto ? (
+                        <>
+                            <View style={[styles.inputMonto, { borderColor: colores.inputBorder }]}>
+                                <Text style={[styles.simbolo, { color: colores.texto }]}>$</Text>
+                                <TextInput
+                                    placeholder="0.00"
+                                    placeholderTextColor={colores.texto}
+                                    style={[
+                                        styles.inputNumero,
+                                        { color: colores.texto }
+                                    ]}
+                                    value={presupuestoNuevo}
+                                    onChangeText={setPresupuestoNuevo}
+                                    keyboardType="decimal-pad"
+                                    editable={!guardando}
+                                />
+                            </View>
+
+                            <View style={[styles.botonesMonto, { marginTop: 12 }]}>
+                                <Pressable
+                                    style={[styles.botonMonto, { backgroundColor: colores.inputBorder }]}
+                                    onPress={handleCancelarPresupuesto}
+                                    disabled={guardando}
+                                >
+                                    <Text style={[styles.textoBotonMonto, { color: colores.texto }]}>Cancelar</Text>
+                                </Pressable>
+                                <Pressable
+                                    style={[styles.botonMonto, { backgroundColor: colores.boton }]}
+                                    onPress={handleGuardarPresupuesto}
+                                    disabled={guardando}
+                                >
+                                    <Text style={styles.textoBotonMontoGuardar}>
+                                        {guardando ? 'Guardando...' : 'Guardar'}
+                                    </Text>
+                                </Pressable>
+                            </View>
+                        </>
+                    ) : (
+                        <View>
+                            <Text style={[styles.montoActual, { color: colores.texto }]}>
+                                {/* Para que el presupuesto se muestre con 500.000 en lugar de 500000 */}
+                                $ {presupuesto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                {/* ${presupuesto.toFixed(2)} */}
+                            </Text>
+                            <Text style={[styles.descripcion, { color: colores.texto, opacity: 0.6 }]}>
+                                Este es tu presupuesto mensual. Los gastos se comparan contra este monto.
+                            </Text>
+                        </View>
+                    )}
+                </View>
+
+                {/* Sección Datos */}
+                <View style={[styles.seccion, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }]}>
+                    <Text style={[styles.tituloSeccion, { color: colores.textoPrimario }]}>Datos</Text>
+
+                    <Pressable style={styles.filaOpcion}>
+                        <View>
+                            <Text style={[styles.etiqueta, { color: colores.texto }]}>Privacidad y seguridad</Text>
+                            <Text style={[styles.descripcion, { color: colores.texto, opacity: 0.6 }]}>
+                                Tu información se guarda localmente
+                            </Text>
+                        </View>
+                        <Ionicons name="chevron-forward" size={20} color={colores.texto} />
+                    </Pressable>
+                </View>
+
+                <View style={{ height: 20 }} />
+            </ScrollView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingTop: 60,
+        paddingTop: 20,
     },
     header: {
         paddingHorizontal: 16,
@@ -240,5 +272,15 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 13,
         fontWeight: '600',
+    },
+    boton: {
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        borderRadius: 8,
+    },
+    botonTxt: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });

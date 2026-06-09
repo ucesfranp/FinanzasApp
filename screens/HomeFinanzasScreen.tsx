@@ -3,15 +3,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTema } from '../context/TemaContext';
 import { useFinanzas } from '../context/FinanzasContext';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation/types';
 import { useState } from 'react';
 
-type HomeStackParamList = {
-    HomeFinanzas: undefined;
-    DetalleTransaccion: { transaccionId: number };
-    AgregarTransaccion: undefined;
-};
-
-type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'HomeFinanzas'>;
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 interface Props {
     navigation: NavigationProp;
@@ -19,7 +14,7 @@ interface Props {
 
 export default function HomeFinanzasScreen({ navigation }: Props) {
     const { colores } = useTema();
-    const { transacciones, presupuesto, obtenerResumen, sincronizar } = useFinanzas();
+    const { transacciones, presupuesto, obtenerResumen, cargarDelMockAPI } = useFinanzas();
     const [movimientosCargados, setMovimientosCargados] = useState(false);
     const [cargandoMovimientos, setCargandoMovimientos] = useState(false);
 
@@ -33,7 +28,7 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
     const handleCargarMovimientos = async () => {
         try {
             setCargandoMovimientos(true);
-            await sincronizar();
+            await cargarDelMockAPI();
             setMovimientosCargados(true);
         } catch (error) {
             Alert.alert('Error', 'No se pudieron cargar los movimientos');
@@ -45,128 +40,156 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
     const porcentajeColor = resumen.disponible < 0 ? '#FF6B6B' : resumen.disponible < presupuesto * 0.2 ? '#FFE66D' : '#4ECDC4';
 
     return (
-        <ScrollView style={[styles.container, { backgroundColor: colores.fondo }]}>
-            {/* Header */}
-            <View style={styles.header}>
-                <Text style={[styles.titulo, { color: colores.textoPrimario }]}>Mi Dinero</Text>
-                <Pressable 
-                    style={[styles.botonFlotante, { backgroundColor: colores.boton }]}
-                    onPress={() => navigation.navigate('AgregarTransaccion')}
+        <View style={[{ flex: 1, backgroundColor: colores.fondo, paddingTop: 50 }]}>
+
+            {/* Botones de navegación */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 10 }}>
+                <Pressable
+                    style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
+                    onPress={() => navigation.navigate('Movimientos')}
                 >
-                    <Ionicons name="add" size={24} color="white" />
+                    <Text style={styles.botonTxt}>Movimientos</Text>
+                </Pressable>
+                <Pressable
+                    style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
+                    onPress={() => navigation.navigate('Categorias')}
+                >
+                    <Text style={styles.botonTxt}>Categorias</Text>
+                </Pressable>
+                <Pressable
+                    style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
+                    onPress={() => navigation.navigate('Ajustes')}
+                >
+                    <Text style={styles.botonTxt}>Ajustes</Text>
                 </Pressable>
             </View>
 
-            {/* Tarjeta principal - Disponible */}
-            <View style={[styles.tarjetaPrincipal, { backgroundColor: porcentajeColor }]}>
-                <Text style={styles.etiqueta}>Disponible este mes</Text>
-                <Text style={styles.monto}>${resumen.disponible.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
-                <Text style={styles.subTexto}>
-                    Presupuesto: ${presupuesto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </Text>
-            </View>
 
-            {/* Alerta si supera presupuesto */}
-            {resumen.disponible < 0 && (
-                <View style={[styles.alerta, { backgroundColor: 'rgba(255, 107, 107, 0.1)', borderColor: '#FF6B6B' }]}>
-                    <Ionicons name="alert-circle" size={20} color="#FF6B6B" />
-                    <Text style={[styles.alertaTexto, { color: '#FF6B6B' }]}>
-                        ⚠️ ¡Has superado tu presupuesto!
+
+
+            <ScrollView style={styles.container}>
+                {/* Header */}
+                <View style={styles.header}>
+                    <Text style={[styles.titulo, { color: colores.textoPrimario }]}>Mi Dinero</Text>
+                    <Pressable
+                        style={[styles.botonFlotante, { backgroundColor: colores.boton }]}
+                        onPress={() => navigation.navigate('AgregarTransaccion')}
+                    >
+                        <Ionicons name="add" size={24} color="white" />
+                    </Pressable>
+                </View>
+
+                {/* Tarjeta principal - Disponible */}
+                <View style={[styles.tarjetaPrincipal, { backgroundColor: porcentajeColor }]}>
+                    <Text style={styles.etiqueta}>Disponible este mes</Text>
+                    <Text style={styles.monto}>${resumen.disponible.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+                    <Text style={styles.subTexto}>
+                        Presupuesto: ${presupuesto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </Text>
                 </View>
-            )}
 
-            {/* Resumen del mes */}
-            <View style={[styles.seccion, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }]}>
-                <Text style={[styles.tituloSeccion, { color: colores.textoPrimario }]}>Resumen de Mes</Text>
-                
-                <View style={styles.resumenGrid}>
-                    <View style={styles.resumenItem}>
-                        <Text style={[styles.resumenLabel, { color: colores.texto }]}>Ingresos</Text>
-                        <Text style={[styles.resumenMonto, { color: '#4ECDC4' }]}>
-                            +${resumen.totalIngresos.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {/* Alerta si supera presupuesto */}
+                {resumen.disponible < 0 && (
+                    <View style={[styles.alerta, { backgroundColor: 'rgba(255, 107, 107, 0.1)', borderColor: '#FF6B6B' }]}>
+                        <Ionicons name="alert-circle" size={20} color="#FF6B6B" />
+                        <Text style={[styles.alertaTexto, { color: '#FF6B6B' }]}>
+                            ⚠️ ¡Has superado tu presupuesto!
                         </Text>
                     </View>
-                    <View style={styles.resumenItem}>
-                        <Text style={[styles.resumenLabel, { color: colores.texto }]}>Gastos</Text>
-                        <Text style={[styles.resumenMonto, { color: '#FF6B6B' }]}>
-                            -${resumen.totalGastos.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </Text>
-                    </View>
-                </View>
-
-                <View style={[styles.progressBar, { backgroundColor: colores.inputBorder }]}>
-                    <View 
-                        style={[
-                            styles.progressFill, 
-                            { 
-                                width: `${Math.min(resumen.porcentajeUsado, 100)}%`,
-                                backgroundColor: resumen.porcentajeUsado > 100 ? '#FF6B6B' : '#4ECDC4'
-                            }
-                        ]}
-                    />
-                </View>
-                <Text style={[styles.progressTexto, { color: colores.texto }]}>
-                    {resumen.porcentajeUsado.toFixed(1)}% del presupuesto usado
-                </Text>
-            </View>
-
-            {/* Últimos movimientos */}
-            <View style={styles.seccion}>
-                <Text style={[styles.tituloSeccion, { color: colores.textoPrimario }]}>Últimos Movimientos</Text>
-                
-                {!movimientosCargados ? (
-                    <Pressable 
-                        style={[styles.botonCargar, { backgroundColor: colores.boton }]}
-                        onPress={handleCargarMovimientos}
-                        disabled={cargandoMovimientos}
-                    >
-                        {cargandoMovimientos ? (
-                            <>
-                                <ActivityIndicator size="small" color="white" />
-                                <Text style={styles.textoBotonCargar}>Cargando movimientos...</Text>
-                            </>
-                        ) : (
-                            <>
-                                <Ionicons name="download-outline" size={20} color="white" />
-                                <Text style={styles.textoBotonCargar}>Cargar últimos movimientos</Text>
-                            </>
-                        )}
-                    </Pressable>
-                ) : (
-                    <>
-                        {ultimos5.length === 0 ? (
-                            <Text style={[styles.textoVacio, { color: colores.texto }]}>No hay movimientos este mes</Text>
-                        ) : (
-                            ultimos5.map((transaccion) => (
-                                <Pressable 
-                                    key={transaccion.id}
-                                    style={[styles.movimiento, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }]}
-                                    onPress={() => navigation.navigate('DetalleTransaccion', { transaccionId: transaccion.id })}
-                                >
-                                    <View style={styles.movimientoInfo}>
-                                        <Text style={[styles.movimientoDesc, { color: colores.texto }]}>
-                                            {transaccion.descripcion}
-                                        </Text>
-                                        <Text style={[styles.movimientoFecha, { color: colores.texto, opacity: 0.6 }]}>
-                                            {new Date(transaccion.fecha).toLocaleDateString('es-ES')}
-                                        </Text>
-                                    </View>
-                                    <Text style={[
-                                        styles.movimientoMonto,
-                                        { color: transaccion.tipo === 'ingreso' ? '#4ECDC4' : '#FF6B6B' }
-                                    ]}>
-                                        {transaccion.tipo === 'ingreso' ? '+' : '-'}${transaccion.monto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                    </Text>
-                                </Pressable>
-                            ))
-                        )}
-                    </>
                 )}
-            </View>
 
-            <View style={{ height: 20 }} />
-        </ScrollView>
+                {/* Resumen del mes */}
+                <View style={[styles.seccion, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }]}>
+                    <Text style={[styles.tituloSeccion, { color: colores.textoPrimario }]}>Resumen de Mes</Text>
+
+                    <View style={styles.resumenGrid}>
+                        <View style={styles.resumenItem}>
+                            <Text style={[styles.resumenLabel, { color: colores.texto }]}>Ingresos</Text>
+                            <Text style={[styles.resumenMonto, { color: '#4ECDC4' }]}>
+                                +${resumen.totalIngresos.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </Text>
+                        </View>
+                        <View style={styles.resumenItem}>
+                            <Text style={[styles.resumenLabel, { color: colores.texto }]}>Gastos</Text>
+                            <Text style={[styles.resumenMonto, { color: '#FF6B6B' }]}>
+                                -${resumen.totalGastos.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </Text>
+                        </View>
+                    </View>
+
+                    <View style={[styles.progressBar, { backgroundColor: colores.inputBorder }]}>
+                        <View
+                            style={[
+                                styles.progressFill,
+                                {
+                                    width: `${Math.min(resumen.porcentajeUsado, 100)}%`,
+                                    backgroundColor: resumen.porcentajeUsado > 100 ? '#FF6B6B' : '#4ECDC4'
+                                }
+                            ]}
+                        />
+                    </View>
+                    <Text style={[styles.progressTexto, { color: colores.texto }]}>
+                        {resumen.porcentajeUsado.toFixed(1)}% del presupuesto usado
+                    </Text>
+                </View>
+
+                {/* Últimos movimientos */}
+                <View style={styles.seccion}>
+                    <Text style={[styles.tituloSeccion, { color: colores.textoPrimario }]}>Últimos Movimientos</Text>
+
+                    {!movimientosCargados ? (
+                        <Pressable
+                            style={[styles.botonCargar, { backgroundColor: colores.boton }]}
+                            onPress={handleCargarMovimientos}
+                            disabled={cargandoMovimientos}
+                        >
+                            {cargandoMovimientos ? (
+                                <>
+                                    <ActivityIndicator size="small" color="white" />
+                                    <Text style={styles.textoBotonCargar}>Cargando movimientos...</Text>
+                                </>
+                            ) : (
+                                <>
+                                    <Ionicons name="download-outline" size={20} color="white" />
+                                    <Text style={styles.textoBotonCargar}>Cargar últimos movimientos</Text>
+                                </>
+                            )}
+                        </Pressable>
+                    ) : (
+                        <>
+                            {ultimos5.length === 0 ? (
+                                <Text style={[styles.textoVacio, { color: colores.texto }]}>No hay movimientos este mes</Text>
+                            ) : (
+                                ultimos5.map((transaccion) => (
+                                    <Pressable
+                                        key={transaccion.id}
+                                        style={[styles.movimiento, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }]}
+                                        onPress={() => navigation.navigate('DetalleTransaccion', { id: transaccion.id })}
+                                    >
+                                        <View style={styles.movimientoInfo}>
+                                            <Text style={[styles.movimientoDesc, { color: colores.texto }]}>
+                                                {transaccion.descripcion}
+                                            </Text>
+                                            <Text style={[styles.movimientoFecha, { color: colores.texto, opacity: 0.6 }]}>
+                                                {transaccion.fecha.split('T')[0]}
+                                            </Text>
+                                        </View>
+                                        <Text style={[
+                                            styles.movimientoMonto,
+                                            { color: transaccion.tipo === 'ingreso' ? '#4ECDC4' : '#FF6B6B' }
+                                        ]}>
+                                            {transaccion.tipo === 'ingreso' ? '+' : '-'}${transaccion.monto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </Text>
+                                    </Pressable>
+                                ))
+                            )}
+                        </>
+                    )}
+                </View>
+
+                <View style={{ height: 20 }} />
+            </ScrollView>
+        </View>
     );
 }
 
@@ -174,7 +197,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         paddingHorizontal: 22,
-        paddingTop: 80,
+        paddingTop: 20,
     },
     header: {
         flexDirection: 'row',
@@ -311,5 +334,15 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 16,
         fontWeight: '600',
+    },
+    boton: {
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        borderRadius: 8,
+    },
+    botonTxt: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });

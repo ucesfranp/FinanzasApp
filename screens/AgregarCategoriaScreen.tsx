@@ -55,10 +55,10 @@ export default function AgregarCategoriaScreen({ navigation }: Props) {
     };
 
     return (
-        <ScrollView style={[styles.container, { backgroundColor: colores.fondo }]}>
+        <ScrollView style={[styles.container, { backgroundColor: colores.fondo, paddingTop: 80 }]}>
             {/* Nombre */}
             <View style={styles.seccion}>
-                <Text style={[styles.label, { color: colores.textoPrimario }]}>Nombre</Text>
+                <Text style={[styles.label, { color: colores.textoPrimario }]}>Nombre de categoría</Text>
                 <TextInput
                     placeholder="Ej: Café"
                     placeholderTextColor={colores.texto}
