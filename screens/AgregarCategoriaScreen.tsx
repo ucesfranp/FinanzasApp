@@ -3,6 +3,7 @@ import { useTema } from '../context/TemaContext';
 import { useFinanzas } from '../context/FinanzasContext';
 import { useState } from 'react';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { showAlert } from '../services/alertUtils';
 
 type AgregarCategoriaStackParamList = {
     AgregarCategoria: undefined;
@@ -14,6 +15,7 @@ interface Props {
     navigation: NavigationProp;
 }
 
+/* Colores disponibles para las categorías */
 const COLORES_DISPONIBLES = [
     '#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3', 
     '#FF8C94', '#C7CEEA', '#FDDB92', '#A8E6CF',
@@ -28,9 +30,10 @@ export default function AgregarCategoriaScreen({ navigation }: Props) {
     const [colorSeleccionado, setColorSeleccionado] = useState(COLORES_DISPONIBLES[0]);
     const [guardando, setGuardando] = useState(false);
 
+    /* Maneja la lógica para guardar la categoría */
     const handleGuardar = async () => {
         if (!nombre.trim()) {
-            Alert.alert('Error', 'Por favor ingresa un nombre para la categoría');
+            showAlert('Error', 'Por favor ingresa un nombre para la categoría');
             return;
         }
 
@@ -40,14 +43,14 @@ export default function AgregarCategoriaScreen({ navigation }: Props) {
                 nombre: nombre.trim(),
                 color: colorSeleccionado,
             });
-
-            Alert.alert('Éxito', 'Categoría creada');
+            showAlert('Éxito', 'Categoría creada');
             navigation.goBack();
+
         } catch (err: any) {
             if (err.message.includes('UNIQUE')) {
-                Alert.alert('Error', 'Esta categoría ya existe');
+                showAlert('Error', 'Esta categoría ya existe');
             } else {
-                Alert.alert('Error', 'No se pudo crear la categoría');
+                showAlert('Error', 'No se pudo crear la categoría');
             }
         } finally {
             setGuardando(false);
@@ -60,27 +63,21 @@ export default function AgregarCategoriaScreen({ navigation }: Props) {
             <View style={styles.seccion}>
                 <Text style={[styles.label, { color: colores.textoPrimario }]}>Nombre de categoría</Text>
                 <TextInput
-                    placeholder="Ej: Café"
+                    placeholder="Ejemplo: Café"
                     placeholderTextColor={colores.texto}
-                    style={[
-                        styles.input,
-                        { backgroundColor: colores.inputBg, borderColor: colores.inputBorder, color: colores.texto }
-                    ]}
+                    style={[styles.input, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder, color: colores.texto }]}
                     value={nombre}
                     onChangeText={setNombre}
                     editable={!guardando}
                 />
             </View>
 
-            {/* Color */}
+            {/* Selección de Color */}
             <View style={styles.seccion}>
                 <Text style={[styles.label, { color: colores.textoPrimario }]}>Color</Text>
                 
                 {/* Preview */}
-                <View style={[
-                    styles.preview,
-                    { backgroundColor: colorSeleccionado }
-                ]}>
+                <View style={[styles.preview, { backgroundColor: colorSeleccionado }]}>
                     <Text style={styles.previewTexto}>Vista previa</Text>
                 </View>
 
@@ -89,11 +86,7 @@ export default function AgregarCategoriaScreen({ navigation }: Props) {
                     {COLORES_DISPONIBLES.map((color) => (
                         <Pressable
                             key={color}
-                            style={[
-                                styles.botonColor,
-                                { backgroundColor: color },
-                                colorSeleccionado === color && { borderWidth: 3, borderColor: colores.textoPrimario }
-                            ]}
+                            style={[styles.botonColor, { backgroundColor: color }, colorSeleccionado === color && { borderWidth: 3, borderColor: colores.textoPrimario }]}
                             onPress={() => setColorSeleccionado(color)}
                             disabled={guardando}
                         />

@@ -16,15 +16,14 @@ export default function CategoriasScreen({ navigation }: Props) {
     const { colores } = useTema();
     const { categorias, eliminarCategoria } = useFinanzas();
 
+    /* Maneja la eliminación de una categoría */
     const handleEliminar = (id: number, nombre: string) => {
         showAlert(
             'Eliminar categoría',
             `¿Estás seguro de que quieres eliminar "${nombre}"?`,
             [
                 { text: 'Cancelar', onPress: () => { } },
-                {
-                    text: 'Eliminar',
-                    onPress: async () => {
+                { text: 'Eliminar', onPress: async () => {
                         try {
                             await eliminarCategoria(id);
                             Alert.alert('Éxito', 'Categoría eliminada');
@@ -32,7 +31,7 @@ export default function CategoriasScreen({ navigation }: Props) {
                             Alert.alert('Error', 'No se pudo eliminar la categoría');
                         }
                     },
-                    style: 'destructive',
+                    /* style: 'destructive',  */
                 },
             ]
         );
@@ -65,13 +64,14 @@ export default function CategoriasScreen({ navigation }: Props) {
 
 
             <View style={[styles.container, { backgroundColor: colores.fondo }]}>
+
                 {/* Header */}
                 <View style={styles.header}>
                     <Text style={[styles.titulo, { color: colores.textoPrimario }]}>Categorías</Text>
-                    <Pressable
-                        style={[styles.botonAgregar, { backgroundColor: colores.boton }]}
-                        onPress={() => navigation.navigate('AgregarCategoria')}
-                    >
+
+                    {/* Botón para agregar categoría */}
+                    <Pressable style={[styles.botonAgregar, { backgroundColor: colores.boton }]}
+                        onPress={() => navigation.navigate('AgregarCategoria')}>
                         <Ionicons name="add" size={24} color="white" />
                     </Pressable>
                 </View>
@@ -89,30 +89,28 @@ export default function CategoriasScreen({ navigation }: Props) {
                         data={categorias}
                         keyExtractor={(item) => item.id.toString()}
                         renderItem={({ item }) => (
-                            <View style={[
-                                styles.itemCategoria,
-                                { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }
-                            ]}>
+                            <View style={[styles.itemCategoria, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }]}>
+                                {/* Muestro el color asociado a esa categoría */}
                                 <View
-                                    style={[
-                                        styles.colorBox,
-                                        { backgroundColor: item.color }
-                                    ]}
+                                    style={[styles.colorBox, { backgroundColor: item.color }]}
                                 />
+                                
+                                {/* Muestro el nombre de la categoría */}
                                 <Text style={[styles.nombre, { color: colores.texto }]}>
                                     {item.nombre}
                                 </Text>
+
                                 <View style={styles.botones}>
-                                    <Pressable
-                                        style={[styles.botonAccion, { backgroundColor: colores.boton }]}
-                                        onPress={() => navigation.navigate('EditarCategoria', { id: item.id })}
-                                    >
+
+                                    {/* Botón para editar categoría */}
+                                    <Pressable style={[styles.botonAccion, { backgroundColor: colores.boton }]}
+                                        onPress={() => navigation.navigate('EditarCategoria', { id: item.id })}>
                                         <Ionicons name="pencil" size={16} color="white" />
                                     </Pressable>
-                                    <Pressable
-                                        style={[styles.botonAccion, { backgroundColor: '#FF6B6B' }]}
-                                        onPress={() => handleEliminar(item.id, item.nombre)}
-                                    >
+
+                                    {/* Botón para eliminar categoría */}
+                                    <Pressable style={[styles.botonAccion, { backgroundColor: '#FF6B6B' }]}
+                                        onPress={() => handleEliminar(item.id, item.nombre)}>
                                         <Ionicons name="trash" size={16} color="white" />
                                     </Pressable>
                                 </View>

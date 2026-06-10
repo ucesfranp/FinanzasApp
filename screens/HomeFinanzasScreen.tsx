@@ -28,6 +28,7 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
 
     const [nombre, setNombre] = useState(''); // estado para guardar el nombre leído de las preferencias --> nombre es el estado, setNombre es la función para actualizarlo, y '' es el valor inicial (vacío)
 
+    /* Función para cargar movimientos */
     const handleCargarMovimientos = async () => {
         try {
             setCargandoMovimientos(true);
@@ -42,6 +43,7 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
 
     const porcentajeColor = resumen.disponible < 0 ? '#FF6B6B' : resumen.disponible < presupuesto * 0.2 ? '#FFE66D' : '#4ECDC4';
 
+    /* Cargar nombre de las preferencias --> Ajustes */
     useEffect(() => {
         async function cargarNombre() {
             const prefs = await leerPrefs();
@@ -151,7 +153,7 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
 
                 {/* Últimos movimientos */}
                 <View style={styles.seccion}>
-                    <Text style={[styles.tituloSeccion, { color: colores.textoPrimario }]}>Últimos Movimientos</Text>
+                    <Text style={[styles.tituloSeccion, { color: colores.textoPrimario }]}>Últimos 5 Movimientos</Text>
 
                     {!movimientosCargados ? (
                         <Pressable

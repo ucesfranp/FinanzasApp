@@ -3,6 +3,7 @@ import { useTema } from '../context/TemaContext';
 import { useFinanzas } from '../context/FinanzasContext';
 import { useState, useEffect } from 'react';
 import { useRoute, useNavigation } from '@react-navigation/native';
+import { showAlert } from '../services/alertUtils';
 
 const COLORES_DISPONIBLES = [
     '#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3', 
@@ -40,7 +41,7 @@ export default function EditarCategoriaScreen() {
 
     const handleGuardar = async () => {
         if (!nombre.trim()) {
-            Alert.alert('Error', 'Por favor ingresa un nombre para la categoría');
+            showAlert('Error', 'Por favor ingresa un nombre para la categoría');
             return;
         }
 
@@ -51,13 +52,13 @@ export default function EditarCategoriaScreen() {
                 color: colorSeleccionado,
             });
 
-            Alert.alert('Éxito', 'Categoría actualizada');
+            showAlert('Éxito', 'Categoría actualizada');
             navigation.goBack();
         } catch (err: any) {
             if (err.message.includes('UNIQUE')) {
-                Alert.alert('Error', 'Esta categoría ya existe');
+                showAlert('Error', 'Esta categoría ya existe');
             } else {
-                Alert.alert('Error', 'No se pudo actualizar la categoría');
+                showAlert('Error', 'No se pudo actualizar la categoría');
             }
         } finally {
             setGuardando(false);
@@ -72,25 +73,19 @@ export default function EditarCategoriaScreen() {
                 <TextInput
                     placeholder="Ej: Café"
                     placeholderTextColor={colores.texto}
-                    style={[
-                        styles.input,
-                        { backgroundColor: colores.inputBg, borderColor: colores.inputBorder, color: colores.texto }
-                    ]}
+                    style={[styles.input, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder, color: colores.texto }]}
                     value={nombre}
                     onChangeText={setNombre}
                     editable={!guardando}
                 />
             </View>
 
-            {/* Color */}
+            {/* Selección de Color */}
             <View style={styles.seccion}>
                 <Text style={[styles.label, { color: colores.textoPrimario }]}>Color</Text>
                 
                 {/* Preview */}
-                <View style={[
-                    styles.preview,
-                    { backgroundColor: colorSeleccionado }
-                ]}>
+                <View style={[styles.preview, { backgroundColor: colorSeleccionado }]}>
                     <Text style={styles.previewTexto}>Vista previa</Text>
                 </View>
 

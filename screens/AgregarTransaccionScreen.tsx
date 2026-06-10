@@ -1,10 +1,11 @@
-import { View, Text, StyleSheet, Pressable, TextInput, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, Pressable, TextInput, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTema } from '../context/TemaContext';
 import { useFinanzas } from '../context/FinanzasContext';
 import { useState } from 'react';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getCurrentDateString } from '../services/dateUtils';
+import { showAlert } from '../services/alertUtils';
 
 type AgregarStackParamList = {
     AgregarTransaccion: undefined;
@@ -26,20 +27,22 @@ export default function AgregarTransaccionScreen({ navigation }: Props) {
     const [categoriaId, setCategoriaId] = useState<number>(categorias[0]?.id || 1);
     const [guardando, setGuardando] = useState(false);
 
+    /* Función para guardar la transacción */
     const handleGuardar = async () => {
         if (!descripcion.trim()) {
-            Alert.alert('Error', 'Por favor ingresa una descripción');
+            /* Para que salte el alert debemos hacer */
+            showAlert('Error', 'Por favor ingresa una descripción');
             return;
         }
 
         if (!monto.trim()) {
-            Alert.alert('Error', 'Por favor ingresa un monto');
+            showAlert('Error', 'Por favor ingresa un monto');
             return;
         }
 
         const montoNum = parseFloat(monto);
         if (isNaN(montoNum) || montoNum <= 0) {
-            Alert.alert('Error', 'Por favor ingresa un monto válido');
+            showAlert('Error', 'Por favor ingresa un monto válido');
             return;
         }
 
@@ -53,10 +56,10 @@ export default function AgregarTransaccionScreen({ navigation }: Props) {
                 fecha: getCurrentDateString(),
             });
 
-            Alert.alert('Éxito', 'Transacción guardada');
+            showAlert('Éxito', 'Transacción guardada');
             navigation.goBack();
         } catch (err) {
-            Alert.alert('Error', 'No se pudo guardar la transacción');
+            showAlert('Error', 'No se pudo guardar la transacción');
         } finally {
             setGuardando(false);
         }
@@ -68,59 +71,39 @@ export default function AgregarTransaccionScreen({ navigation }: Props) {
             <View style={styles.seccion}>
                 <Text style={[styles.label, { color: colores.textoPrimario }]}>Tipo de movimiento</Text>
                 <View style={styles.botonesTipo}>
-                    <Pressable 
-                        style={[
-                            styles.botonTipo,
-                            tipo === 'gasto' && { backgroundColor: '#FF6B6B' },
-                            { borderColor: colores.inputBorder }
-                        ]}
-                        onPress={() => setTipo('gasto')}
-                    >
+                    {/* Botones para seleccionar el tipo de transacción */}
+                    <Pressable style={[styles.botonTipo, tipo === 'gasto' && { backgroundColor: '#FF6B6B' }, { borderColor: colores.inputBorder }]}
+                        onPress={() => setTipo('gasto')}>
                         <Ionicons name="arrow-up" size={20} color={tipo === 'gasto' ? 'white' : colores.texto} />
-                        <Text style={[
-                            styles.textoBotonTipo,
-                            tipo === 'gasto' && { color: 'white' }
-                        ]}>
+                        <Text style={[styles.textoBotonTipo, tipo === 'gasto' && { color: 'white' }]}>
                             Gasto
                         </Text>
                     </Pressable>
 
-                    <Pressable 
-                        style={[
-                            styles.botonTipo,
-                            tipo === 'ingreso' && { backgroundColor: '#4ECDC4' },
-                            { borderColor: colores.inputBorder }
-                        ]}
-                        onPress={() => setTipo('ingreso')}
-                    >
+                    <Pressable style={[styles.botonTipo, tipo === 'ingreso' && { backgroundColor: '#4dce7f' }, { borderColor: colores.inputBorder }]}
+                        onPress={() => setTipo('ingreso')}>
                         <Ionicons name="arrow-down" size={20} color={tipo === 'ingreso' ? 'white' : colores.texto} />
-                        <Text style={[
-                            styles.textoBotonTipo,
-                            tipo === 'ingreso' && { color: 'white' }
-                        ]}>
+                        <Text style={[styles.textoBotonTipo, tipo === 'ingreso' && { color: 'white' }]}>
                             Ingreso
                         </Text>
                     </Pressable>
                 </View>
             </View>
 
-            {/* Descripción */}
+            {/* Input Descripción */}
             <View style={styles.seccion}>
                 <Text style={[styles.label, { color: colores.textoPrimario }]}>Descripción</Text>
                 <TextInput
                     placeholder="Ej: Compra en supermercado"
                     placeholderTextColor={colores.texto}
-                    style={[
-                        styles.input,
-                        { backgroundColor: colores.inputBg, borderColor: colores.inputBorder, color: colores.texto }
-                    ]}
+                    style={[styles.input, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder, color: colores.texto }]}
                     value={descripcion}
                     onChangeText={setDescripcion}
                     editable={!guardando}
                 />
             </View>
 
-            {/* Monto */}
+            {/* Input Monto */}
             <View style={styles.seccion}>
                 <Text style={[styles.label, { color: colores.textoPrimario }]}>Monto</Text>
                 <View style={[styles.inputMonto, { borderColor: colores.inputBorder }]}>
@@ -128,10 +111,7 @@ export default function AgregarTransaccionScreen({ navigation }: Props) {
                     <TextInput
                         placeholder="0.00"
                         placeholderTextColor={colores.texto}
-                        style={[
-                            styles.inputNumero,
-                            { color: colores.texto }
-                        ]}
+                        style={[styles.inputNumero,{ color: colores.texto }]}
                         value={monto}
                         onChangeText={setMonto}
                         keyboardType="decimal-pad"
@@ -140,22 +120,14 @@ export default function AgregarTransaccionScreen({ navigation }: Props) {
                 </View>
             </View>
 
-            {/* Categoría */}
+            {/* Selección de Categoría */}
             <View style={styles.seccion}>
                 <Text style={[styles.label, { color: colores.textoPrimario }]}>Categoría</Text>
-                <ScrollView 
-                    horizontal 
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.categoriasScroll}
-                >
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriasScroll}>
                     {categorias.map((cat) => (
                         <Pressable
                             key={cat.id}
-                            style={[
-                                styles.botonCategoria,
-                                categoriaId === cat.id && { borderWidth: 2, borderColor: colores.textoPrimario },
-                                { backgroundColor: cat.color }
-                            ]}
+                            style={[styles.botonCategoria, categoriaId === cat.id && { borderWidth: 2, borderColor: colores.textoPrimario }, { backgroundColor: cat.color }]}
                             onPress={() => setCategoriaId(cat.id)}
                             disabled={guardando}
                         >
@@ -165,7 +137,7 @@ export default function AgregarTransaccionScreen({ navigation }: Props) {
                 </ScrollView>
             </View>
 
-            {/* Botones de acción */}
+            {/* Botones para cancelar o guardar el movimiento realizado */}
             <View style={styles.botones}>
                 <Pressable 
                     style={[styles.botonCancelar, { borderColor: colores.inputBorder }]}

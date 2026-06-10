@@ -83,7 +83,7 @@ export default function MovimientosScreen({ navigation }: Props) {
                 </Pressable>
             </View>
 
-            {/* Búsqueda */}
+            {/* Búsqueda de movimientos */}
             <View style={[styles.buscador, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }]}>
                 <Ionicons name="search" size={18} color={colores.texto} style={{ marginRight: 8 }} />
                 <TextInput
@@ -96,73 +96,40 @@ export default function MovimientosScreen({ navigation }: Props) {
             </View>
 
             {/* Filtros */}
-            <View
-                style={[
-                    styles.filtros,
-                    {
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }
-                ]}
-            >
-                <Pressable
-                    style={[
-                        styles.botonFiltro,
-                        filtroTipo === 'todos' && { backgroundColor: colores.textoPrimario }
-                    ]}
-                    onPress={() => setFiltroTipo('todos')}
-                >
-                    <Text style={[
-                        styles.textoFiltro,
-                        filtroTipo === 'todos' && { color: 'white', fontWeight: 'bold' }
-                    ]}>
+            <View style={[styles.filtros, {justifyContent: 'center', alignItems: 'center'}]}>
+                {/* Botón "Todos" */}
+                <Pressable style={[styles.botonFiltro, filtroTipo === 'todos' && { backgroundColor: colores.textoPrimario }]}
+                    onPress={() => setFiltroTipo('todos')}>
+                    <Text style={[styles.textoFiltro, filtroTipo === 'todos' && { color: 'white', fontWeight: 'bold' }]}>
                         Todos
                     </Text>
                 </Pressable>
 
-                <Pressable
-                    style={[
-                        styles.botonFiltro,
-                        filtroTipo === 'ingreso' && { backgroundColor: '#4ECDC4' }
-                    ]}
-                    onPress={() => setFiltroTipo('ingreso')}
-                >
-                    <Text style={[
-                        styles.textoFiltro,
-                        filtroTipo === 'ingreso' && { color: 'white', fontWeight: 'bold' }
-                    ]}>
+                {/* Botón "Ingresos" */}
+                <Pressable style={[styles.botonFiltro, filtroTipo === 'ingreso' && { backgroundColor: '#4dce7f' }]}
+                    onPress={() => setFiltroTipo('ingreso')}>
+                    <Text style={[styles.textoFiltro, filtroTipo === 'ingreso' && { color: 'white', fontWeight: 'bold' }]}>
                         Ingresos
                     </Text>
                 </Pressable>
 
-                <Pressable
-                    style={[
-                        styles.botonFiltro,
-                        filtroTipo === 'gasto' && { backgroundColor: '#FF6B6B' }
-                    ]}
-                    onPress={() => setFiltroTipo('gasto')}
-                >
-                    <Text style={[
-                        styles.textoFiltro,
-                        filtroTipo === 'gasto' && { color: 'white', fontWeight: 'bold' }
-                    ]}>
+                {/* Botón "Gastos" */}
+                <Pressable style={[styles.botonFiltro, filtroTipo === 'gasto' && { backgroundColor: '#FF6B6B' }]}
+                    onPress={() => setFiltroTipo('gasto')}>
+                    <Text style={[styles.textoFiltro, filtroTipo === 'gasto' && { color: 'white', fontWeight: 'bold' }]}>
                         Gastos
                     </Text>
                 </Pressable>
 
-                {filtroCategoria !== null && (
-                    <Pressable
-                        style={[
-                            styles.botonFiltro,
-                            { backgroundColor: obtenerColorCategoria(filtroCategoria), opacity: 0.8 }
-                        ]}
-                        onPress={() => setFiltroCategoria(null)}
-                    >
+                {/* Botón de categoría seleccionada */} 
+                {/* {filtroCategoria !== null && (
+                    <Pressable style={[styles.botonFiltro, { backgroundColor: obtenerColorCategoria(filtroCategoria), opacity: 0.8 }]}
+                        onPress={() => setFiltroCategoria(null)}>
                         <Text style={[styles.textoFiltro, { color: 'white', fontWeight: 'bold' }]}>
                             ✕ {obtenerNombreCategoria(filtroCategoria)}
                         </Text>
                     </Pressable>
-                )}
+                )} */}
             </View>
 
             {/* Lista de movimientos */}
@@ -178,19 +145,13 @@ export default function MovimientosScreen({ navigation }: Props) {
                     data={transaccionesFiltradas}
                     keyExtractor={(item) => item.id.toString()}
                     renderItem={({ item }) => (
-                        <Pressable
-                            style={[
-                                styles.itemMovimiento,
-                                { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }
-                            ]}
+                        /* Tarjetas del detalle de la transaccion --> es un botón */
+                        <Pressable style={[styles.itemMovimiento, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }]}
                             onPress={() => navigation.navigate('DetalleTransaccion', { id: item.id })}
                         >
-                            <View style={[
-                                styles.iconoCategoria,
-                                { backgroundColor: obtenerColorCategoria(item.categoria_id) }
-                            ]}>
+                            <View style={[styles.iconoCategoria, { backgroundColor: obtenerColorCategoria(item.categoria_id) }]}>
                                 <Text style={styles.textoIcono}>
-                                    {item.tipo === 'ingreso' ? '📥' : '📤'}
+                                    {item.tipo === 'ingreso' ? '⭨' : '⭧'}
                                 </Text>
                             </View>
                             <View style={styles.infoMovimiento}>
@@ -201,10 +162,7 @@ export default function MovimientosScreen({ navigation }: Props) {
                                     {obtenerNombreCategoria(item.categoria_id)} • {item.fecha.split('T')[0]}
                                 </Text>
                             </View>
-                            <Text style={[
-                                styles.monto,
-                                { color: item.tipo === 'ingreso' ? '#4ECDC4' : '#FF6B6B' }
-                            ]}>
+                            <Text style={[styles.monto, { color: item.tipo === 'ingreso' ? '#4dce7f' : '#FF6B6B' }]}>
                                 {item.tipo === 'ingreso' ? '+' : '-'}${item.monto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </Text>
                         </Pressable>

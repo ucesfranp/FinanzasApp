@@ -39,15 +39,16 @@ export default function DetalleTransaccionScreen() {
 
     const categoria = categorias.find(c => c.id === transaccion.categoria_id);
 
+    /* Manejar la actualización de la transacción */
     const handleGuardar = async () => {
         if (!descripcion.trim()) {
-            Alert.alert('Error', 'La descripción no puede estar vacía');
+            showAlert('Error', 'La descripción no puede estar vacía');
             return;
         }
 
         const montoNum = parseFloat(monto);
         if (isNaN(montoNum) || montoNum <= 0) {
-            Alert.alert('Error', 'Ingresa un monto válido');
+           showAlert('Error', 'Ingresa un monto válido');
             return;
         }
 
@@ -61,10 +62,10 @@ export default function DetalleTransaccionScreen() {
                 fecha: transaccion.fecha,
                 api_id: transaccion.api_id,
             });
-            Alert.alert('Éxito', 'Transacción actualizada');
+            showAlert('Éxito', 'Transacción actualizada');
             setEditando(false);
         } catch (err) {
-            Alert.alert('Error', 'No se pudo actualizar');
+            showAlert('Error', 'No se pudo actualizar');
         } finally {
             setGuardando(false);
         }
@@ -81,10 +82,10 @@ export default function DetalleTransaccionScreen() {
                     onPress: async () => {
                         try {
                             await eliminarTransaccion(transaccion.id);
-                            Alert.alert('Éxito', 'Transacción eliminada');
+                            showAlert('Éxito', 'Transacción eliminada');
                             navigation.goBack();
                         } catch (err) {
-                            Alert.alert('Error', 'No se pudo eliminar');
+                            showAlert('Error', 'No se pudo eliminar');
                         }
                     },
                     style: 'destructive',
@@ -109,15 +110,12 @@ export default function DetalleTransaccionScreen() {
                 <Text style={styles.categoria}>{categoria?.nombre}</Text>
             </View>
 
-            {/* Información */}
+            {/* Descripción */}
             <View style={[styles.seccion, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }]}>
                 <Text style={[styles.label, { color: colores.textoPrimario }]}>Descripción</Text>
                 {editando ? (
                     <TextInput
-                        style={[
-                            styles.input,
-                            { backgroundColor: colores.fondo, borderColor: colores.inputBorder, color: colores.texto }
-                        ]}
+                        style={[styles.input, { backgroundColor: colores.fondo, borderColor: colores.inputBorder, color: colores.texto }]}
                         value={descripcion}
                         onChangeText={setDescripcion}
                         editable={!guardando}
@@ -127,16 +125,14 @@ export default function DetalleTransaccionScreen() {
                 )}
             </View>
 
+            {/* Monto */}
             <View style={[styles.seccion, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }]}>
                 <Text style={[styles.label, { color: colores.textoPrimario }]}>Monto</Text>
                 {editando ? (
                     <View style={[styles.inputMonto, { borderColor: colores.inputBorder }]}>
                         <Text style={[styles.simbolo, { color: colores.texto }]}>$</Text>
                         <TextInput
-                            style={[
-                                styles.inputNumero,
-                                { color: colores.texto }
-                            ]}
+                            style={[styles.inputNumero, { color: colores.texto }]}
                             value={monto}
                             onChangeText={setMonto}
                             keyboardType="decimal-pad"
@@ -144,7 +140,7 @@ export default function DetalleTransaccionScreen() {
                         />
                     </View>
                 ) : (
-                    <Text style={[styles.valor, { color: colores.texto }]}>${transaccion.monto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+                    <Text style={[styles.valor, { color: colores.texto }]}>$ {transaccion.monto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
                 )}
             </View>
 
@@ -157,16 +153,14 @@ export default function DetalleTransaccionScreen() {
             <View style={styles.botones}>
                 {!editando ? (
                     <>
-                        <Pressable 
-                            style={[styles.boton, { backgroundColor: colores.boton }]}
+                        <Pressable style={[styles.boton, { backgroundColor: colores.boton }]}
                             onPress={() => setEditando(true)}
                         >
                             <Ionicons name="pencil" size={18} color="white" />
                             <Text style={styles.textoBoton}>Editar</Text>
                         </Pressable>
 
-                        <Pressable 
-                            style={[styles.boton, { backgroundColor: '#FF6B6B' }]}
+                        <Pressable style={[styles.boton, { backgroundColor: '#FF6B6B' }]}
                             onPress={handleEliminar}
                         >
                             <Ionicons name="trash" size={18} color="white" />
@@ -200,6 +194,14 @@ export default function DetalleTransaccionScreen() {
                         </Pressable>
                     </>
                 )}
+            </View>
+
+            {/* Vamos a agregar un botón para volver a la pantalla de movimientos */}
+            <View style={{ alignItems: 'center' }}>
+                <Pressable style={[styles.boton, { backgroundColor: colores.inputBorder, marginTop: 20, width: '40%' }]} onPress={() => navigation.goBack()}>
+                    <Ionicons name="arrow-back" size={18} color={colores.texto} />
+                    <Text style={[styles.textoBoton, { color: colores.texto }]}>Volver</Text>
+                </Pressable>
             </View>
 
             <View style={{ height: 20 }} />

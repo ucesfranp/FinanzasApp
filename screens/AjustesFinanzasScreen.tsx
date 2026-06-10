@@ -81,12 +81,14 @@ export default function AjustesFinanzasScreen({ navigation }: Props) {
                 </Pressable>
             </View>
 
+
             <ScrollView style={[styles.container, { backgroundColor: colores.fondo }]}>
                 {/* Header */}
                 <View style={styles.header}>
                     <Text style={[styles.titulo, { color: colores.textoPrimario }]}>Ajustes</Text>
                 </View>
 
+                {/* Sección del Input Nombre */}
                 <View style={[styles.seccion, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }]}>
                     <Text style={[styles.tituloSeccion, { color: colores.textoPrimario }]}>Nombre</Text>
                     <TextInput
@@ -138,30 +140,25 @@ export default function AjustesFinanzasScreen({ navigation }: Props) {
                                 <TextInput
                                     placeholder="0.00"
                                     placeholderTextColor={colores.texto}
-                                    style={[
-                                        styles.inputNumero,
-                                        { color: colores.texto }
-                                    ]}
+                                    style={[styles.inputNumero, { color: colores.texto }]}
                                     value={presupuestoNuevo}
                                     onChangeText={setPresupuestoNuevo}
-                                    keyboardType="decimal-pad"
+                                    /* keyboardType="decimal-pad" /* esto es para que aparezca el teclado con el punto decimal */ 
                                     editable={!guardando}
                                 />
                             </View>
 
+                            {/* Botones para guardar o cancelar */}
                             <View style={[styles.botonesMonto, { marginTop: 12 }]}>
-                                <Pressable
-                                    style={[styles.botonMonto, { backgroundColor: colores.inputBorder }]}
+                                <Pressable style={[styles.botonMonto, { backgroundColor: colores.inputBorder }]}
                                     onPress={handleCancelarPresupuesto}
-                                    disabled={guardando}
-                                >
+                                    disabled={guardando}>
                                     <Text style={[styles.textoBotonMonto, { color: colores.texto }]}>Cancelar</Text>
                                 </Pressable>
-                                <Pressable
-                                    style={[styles.botonMonto, { backgroundColor: colores.boton }]}
+
+                                <Pressable style={[styles.botonMonto, { backgroundColor: colores.boton }]}
                                     onPress={handleGuardarPresupuesto}
-                                    disabled={guardando}
-                                >
+                                    disabled={guardando}>
                                     <Text style={styles.textoBotonMontoGuardar}>
                                         {guardando ? 'Guardando...' : 'Guardar'}
                                     </Text>
@@ -173,7 +170,6 @@ export default function AjustesFinanzasScreen({ navigation }: Props) {
                             <Text style={[styles.montoActual, { color: colores.texto }]}>
                                 {/* Para que el presupuesto se muestre con 500.000 en lugar de 500000 */}
                                 $ {presupuesto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                {/* ${presupuesto.toFixed(2)} */}
                             </Text>
                             <Text style={[styles.descripcion, { color: colores.texto, opacity: 0.6 }]}>
                                 Este es tu presupuesto mensual. Los gastos se comparan contra este monto.
