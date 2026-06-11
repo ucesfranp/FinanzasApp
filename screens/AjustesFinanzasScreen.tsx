@@ -123,7 +123,7 @@ export default function AjustesFinanzasScreen({ navigation }: Props) {
                                 }
                             }
                             
-                    // Resetear estado del botón de movimientos cargados
+                            // Resetear estado del botón de movimientos cargados
                             await AsyncStorage.setItem('movimientosCargados', JSON.stringify(false));
                             
                             // Actualizar estado local

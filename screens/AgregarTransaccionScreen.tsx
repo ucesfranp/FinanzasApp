@@ -158,9 +158,9 @@ export default function AgregarTransaccionScreen({ navigation }: Props) {
 
             {/* Input Fecha */}
             <View style={styles.seccion}>
-                <Text style={[styles.label, { color: colores.textoPrimario }]}>Fecha (YYYY-MM-DD)</Text>
+                <Text style={[styles.label, { color: colores.textoPrimario }]}>Fecha (DD/MM/AAAA)</Text>
                 <TextInput
-                    placeholder="Ej: 2024-06-10"
+                    placeholder="Ej: 07/06/2026"
                     placeholderTextColor={colores.texto}
                     style={[styles.input, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder, color: colores.texto }]}
                     value={fecha}

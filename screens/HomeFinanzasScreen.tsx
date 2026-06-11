@@ -128,7 +128,7 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
     const ultimos5 = transacciones.slice(0, 5);
 
     //Esto es para cambiar el color de fondo de la tarjeta principal según el porcentaje del presupuesto disponible. Si el disponible es negativo, rojo. Si el disponible es menor al 20% del presupuesto, amarillo. Si el disponible es mayor al 20% del presupuesto, verde.
-    const porcentajeColor = resumen.disponible < 0 ? '#FF6B6B' : resumen.disponible < presupuesto * 0.2 ? '#FFE66D' : '#4ECDC4';
+    const porcentajeColor = resumen.disponible < 0 ? '#FF6B6B' : resumen.disponible < presupuesto * 0.2 ? '#FFE66D' : '#4dce7f';
 
     const handleCargarMovimientos = async () => {
         try {
@@ -244,7 +244,7 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
                     <View style={styles.resumenGrid}>
                         <View style={styles.resumenItem}>
                             <Text style={[styles.resumenLabel, { color: colores.texto }]}>Ingresos</Text>
-                            <Text style={[styles.resumenMonto, { color: '#4ECDC4' }]}>
+                            <Text style={[styles.resumenMonto, { color: '#4dce7f' }]}>
                                 +${resumen.totalIngresos.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </Text>
                         </View>
