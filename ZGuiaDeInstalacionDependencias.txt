@@ -1,0 +1,40 @@
+PASOS A SEGUIR PARA INSTALAR LAS DEPENDENCIAS --> Comandos CMD
+
+1- npm install
+
+
+2- npm install @react-navigation/native
+
+3- npm install @react-navigation/native-stack
+
+4- npx expo install react-native-screens react-native-safe-area-context
+
+
+5- npx expo install typescript @types/react @types/react-native
+
+
+6- npm install @react-navigation/native
+
+7- npx expo install react-native-screens react-native-safe-area-context
+
+8- npm install @react-navigation/native-stack
+
+9- npm install @react-navigation/bottom-tabs
+
+
+10- npm install axios       ||          npx expo install axios
+
+
+11- npx expo install @react-native-async-storage/async-storage
+
+
+12- npx expo install expo-sqlite
+
+
+Aclaración:
+Instalacion y configuracion de expo-sqlite
+Error: Metro no resuelve wa-sqlite.wasm en web.
+Causa: expo-sqlite en web usa WASM; Metro no lo empaqueta por defecto.
+Fix: metro.config.js → config.resolver.assetExts.push('wasm').
+Reinicio: npx expo start --web --clear.
+Clase: priorizar móvil; web = configuración extra.
