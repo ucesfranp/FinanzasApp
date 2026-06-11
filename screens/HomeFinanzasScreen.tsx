@@ -139,14 +139,15 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
             for (const transaccion of datosDelAPI) {
                 try {
                     await db.runAsync(
-                        `INSERT OR IGNORE INTO transacciones (descripcion, monto, tipo, categoria_id, fecha) 
-                         VALUES (?, ?, ?, ?, ?)`,
+                        `INSERT OR IGNORE INTO transacciones (descripcion, monto, tipo, categoria_id, fecha, api_id) 
+                         VALUES (?, ?, ?, ?, ?, ?)`,
                         [
                             transaccion.descripcion,
                             transaccion.monto,
                             transaccion.tipo,
                             transaccion.categoria_id,
                             transaccion.fecha,
+                            transaccion.id,
                         ]
                     );
                 } catch (err) {
