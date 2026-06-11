@@ -1,45 +1,68 @@
-import { View, Text, StyleSheet, Pressable, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Alert, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTema } from '../context/TemaContext';
-import { useFinanzas } from '../context/FinanzasContext';
+import { useSQLiteContext } from 'expo-sqlite';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useState, useEffect } from 'react';
-import { Transaccion } from './FinanzasTypes';
+import { Transaccion, Categoria } from './FinanzasTypes';
 import { showAlert } from '../services/alertUtils';
-import { formatDateString } from '../services/dateUtils';
+import { transaccionesApi } from '../services/transaccionesApi';
 
 export default function DetalleTransaccionScreen() {
     const route = useRoute();
     const navigation = useNavigation();
     const { colores } = useTema();
-    const { transacciones, categorias, editarTransaccion, eliminarTransaccion } = useFinanzas();
+    const db = useSQLiteContext();
 
     const transaccionId = (route.params as any)?.id;
-    const transaccion = transacciones.find(t => t.id === transaccionId);
-
+    
+    const [transaccion, setTransaccion] = useState<Transaccion | null>(null);
+    const [categorias, setCategorias] = useState<Categoria[]>([]);
     const [editando, setEditando] = useState(false);
-    const [descripcion, setDescripcion] = useState(transaccion?.descripcion || '');
-    const [monto, setMonto] = useState(transaccion?.monto.toString() || '');
+    const [descripcion, setDescripcion] = useState('');
+    const [monto, setMonto] = useState('');
     const [guardando, setGuardando] = useState(false);
+    const [cargando, setCargando] = useState(true);
 
     useEffect(() => {
-        if (transaccion) {
-            setDescripcion(transaccion.descripcion);
-            setMonto(transaccion.monto.toString());
-        }
-    }, [transaccion]);
+        cargarDatos();
+    }, []);
 
-    if (!transaccion) {
+    const cargarDatos = async () => {
+        try {
+            setCargando(true);
+            const transRes = await db.getFirstAsync<Transaccion>(
+                'SELECT * FROM transacciones WHERE id = ?',
+                [transaccionId]
+            );
+            const catRes = await db.getAllAsync<Categoria>(
+                'SELECT * FROM categorias'
+            );
+            if (transRes) {
+                setTransaccion(transRes);
+                setDescripcion(transRes.descripcion);
+                setMonto(transRes.monto.toString());
+            }
+            setCategorias(catRes);
+        } catch (err) {
+            console.log('Error al cargar datos:', err);
+        } finally {
+            setCargando(false);
+        }
+    };
+
+    if (cargando || !transaccion) {
         return (
             <View style={[styles.container, { backgroundColor: colores.fondo, justifyContent: 'center', alignItems: 'center' }]}>
-                <Text style={[styles.tituloVacio, { color: colores.texto }]}>No encontrado</Text>
+                <Text style={[styles.tituloVacio, { color: colores.texto }]}>
+                    {cargando ? 'Cargando...' : 'No encontrado'}
+                </Text>
             </View>
         );
     }
 
     const categoria = categorias.find(c => c.id === transaccion.categoria_id);
 
-    /* Manejar la actualización de la transacción */
     const handleGuardar = async () => {
         if (!descripcion.trim()) {
             showAlert('Error', 'La descripción no puede estar vacía');
@@ -54,16 +77,32 @@ export default function DetalleTransaccionScreen() {
 
         try {
             setGuardando(true);
-            await editarTransaccion(transaccion.id, {
-                descripcion: descripcion.trim(),
-                monto: montoNum,
-                tipo: transaccion.tipo,
-                categoria_id: transaccion.categoria_id,
-                fecha: transaccion.fecha,
-                api_id: transaccion.api_id,
-            });
+            
+            // Actualizar en BD local
+            await db.runAsync(
+                `UPDATE transacciones SET descripcion = ?, monto = ?, tipo = ?, categoria_id = ?, fecha = ? 
+                 WHERE id = ?`,
+                [descripcion.trim(), montoNum, transaccion.tipo, transaccion.categoria_id, transaccion.fecha, transaccion.id]
+            );
+            
+            // Sincronizar con mockAPI (sin bloquear)
+            if (transaccion.api_id) {
+                const transaccionActualizada = {
+                    descripcion: descripcion.trim(),
+                    monto: montoNum,
+                    tipo: transaccion.tipo,
+                    categoria_id: transaccion.categoria_id,
+                    fecha: transaccion.fecha,
+                    api_id: transaccion.api_id,
+                };
+                transaccionesApi.update(transaccion.api_id, transaccionActualizada).catch(err => {
+                    console.log('Error al sincronizar con mockAPI:', err);
+                });
+            }
+            
             showAlert('Éxito', 'Transacción actualizada');
             setEditando(false);
+            await cargarDatos();
         } catch (err) {
             showAlert('Error', 'No se pudo actualizar');
         } finally {
@@ -81,7 +120,19 @@ export default function DetalleTransaccionScreen() {
                     text: 'Eliminar',
                     onPress: async () => {
                         try {
-                            await eliminarTransaccion(transaccion.id);
+                            // Obtener api_id antes de eliminar
+                            const apiId = transaccion.api_id;
+                            
+                            // Eliminar de BD local
+                            await db.runAsync('DELETE FROM transacciones WHERE id = ?', [transaccion.id]);
+                            
+                            // Sincronizar con mockAPI (sin bloquear)
+                            if (apiId) {
+                                transaccionesApi.remove(apiId).catch(err => {
+                                    console.log('Error al sincronizar eliminación con mockAPI:', err);
+                                });
+                            }
+                            
                             showAlert('Éxito', 'Transacción eliminada');
                             navigation.goBack();
                         } catch (err) {
@@ -93,9 +144,6 @@ export default function DetalleTransaccionScreen() {
             ]
         );
     };
-
-    const fecha = transaccion.fecha;
-    const fechaFormato = formatDateString(fecha, 'datetime');
 
     return (
         <ScrollView style={[styles.container, { backgroundColor: colores.fondo, paddingTop: 80 }]}>
@@ -146,7 +194,7 @@ export default function DetalleTransaccionScreen() {
 
             <View style={[styles.seccion, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }]}>
                 <Text style={[styles.label, { color: colores.textoPrimario }]}>Fecha</Text>
-                <Text style={[styles.valor, { color: colores.texto }]}>{fechaFormato}</Text>
+                <Text style={[styles.valor, { color: colores.texto }]}>{transaccion.fecha}</Text>
             </View>
 
             {/* Botones */}
@@ -303,5 +351,3 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
 });
-
-import { TextInput } from 'react-native';

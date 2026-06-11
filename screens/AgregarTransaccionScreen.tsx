@@ -1,11 +1,12 @@
 import { View, Text, StyleSheet, Pressable, TextInput, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTema } from '../context/TemaContext';
-import { useFinanzas } from '../context/FinanzasContext';
-import { useState } from 'react';
+import { useSQLiteContext } from 'expo-sqlite';
+import { useState, useEffect } from 'react';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { getCurrentDateString } from '../services/dateUtils';
 import { showAlert } from '../services/alertUtils';
+import { transaccionesApi } from '../services/transaccionesApi';
+import { Categoria } from './FinanzasTypes';
 
 type AgregarStackParamList = {
     AgregarTransaccion: undefined;
@@ -19,24 +20,46 @@ interface Props {
 
 export default function AgregarTransaccionScreen({ navigation }: Props) {
     const { colores } = useTema();
-    const { categorias, agregarTransaccion } = useFinanzas();
+    const db = useSQLiteContext();
     
     const [descripcion, setDescripcion] = useState('');
     const [monto, setMonto] = useState('');
+    const [fecha, setFecha] = useState('');
     const [tipo, setTipo] = useState<'gasto' | 'ingreso'>('gasto');
-    const [categoriaId, setCategoriaId] = useState<number>(categorias[0]?.id || 1);
+    const [categoriaId, setCategoriaId] = useState<number>(1);
+    const [categorias, setCategorias] = useState<Categoria[]>([]);
     const [guardando, setGuardando] = useState(false);
+
+    useEffect(() => {
+        cargarCategorias();
+    }, []);
+
+    const cargarCategorias = async () => {
+        try {
+            const result = await db.getAllAsync<Categoria>('SELECT * FROM categorias');
+            setCategorias(result);
+            if (result.length > 0) {
+                setCategoriaId(result[0].id);
+            }
+        } catch (err) {
+            console.log('Error al cargar categorías:', err);
+        }
+    };
 
     /* Función para guardar la transacción */
     const handleGuardar = async () => {
         if (!descripcion.trim()) {
-            /* Para que salte el alert debemos hacer */
             showAlert('Error', 'Por favor ingresa una descripción');
             return;
         }
 
         if (!monto.trim()) {
             showAlert('Error', 'Por favor ingresa un monto');
+            return;
+        }
+
+        if (!fecha.trim()) {
+            showAlert('Error', 'Por favor ingresa una fecha (ej: 2024-06-10)');
             return;
         }
 
@@ -48,12 +71,25 @@ export default function AgregarTransaccionScreen({ navigation }: Props) {
 
         try {
             setGuardando(true);
-            await agregarTransaccion({
+            
+            // Guardar en BD local
+            await db.runAsync(
+                `INSERT INTO transacciones (descripcion, monto, tipo, categoria_id, fecha) 
+                 VALUES (?, ?, ?, ?, ?)`,
+                [descripcion.trim(), montoNum, tipo, categoriaId, fecha.trim()]
+            );
+
+            // Intentar sincronizar con mockAPI (sin bloquear)
+            const transaccionParaAPI = {
                 descripcion: descripcion.trim(),
                 monto: montoNum,
                 tipo,
                 categoria_id: categoriaId,
-                fecha: getCurrentDateString(),
+                fecha: fecha.trim(),
+            };
+            
+            transaccionesApi.create(transaccionParaAPI).catch(err => {
+                console.log('Error al sincronizar con mockAPI:', err);
             });
 
             showAlert('Éxito', 'Transacción guardada');
@@ -118,6 +154,19 @@ export default function AgregarTransaccionScreen({ navigation }: Props) {
                         editable={!guardando}
                     />
                 </View>
+            </View>
+
+            {/* Input Fecha */}
+            <View style={styles.seccion}>
+                <Text style={[styles.label, { color: colores.textoPrimario }]}>Fecha (YYYY-MM-DD)</Text>
+                <TextInput
+                    placeholder="Ej: 2024-06-10"
+                    placeholderTextColor={colores.texto}
+                    style={[styles.input, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder, color: colores.texto }]}
+                    value={fecha}
+                    onChangeText={setFecha}
+                    editable={!guardando}
+                />
             </View>
 
             {/* Selección de Categoría */}

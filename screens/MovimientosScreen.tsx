@@ -1,11 +1,12 @@
 import { View, Text, StyleSheet, FlatList, Pressable, TextInput, ScrollView, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTema } from '../context/TemaContext';
-import { useFinanzas } from '../context/FinanzasContext';
-import { useState } from 'react';
+import { useSQLiteContext } from 'expo-sqlite';
+import React, { useState, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
-import { Transaccion } from './FinanzasTypes';
+import { Transaccion, Categoria } from './FinanzasTypes';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Movimientos'>;
 
@@ -15,11 +16,44 @@ interface Props {
 
 export default function MovimientosScreen({ navigation }: Props) {
     const { colores } = useTema();
-    const { transacciones, categorias, sincronizar } = useFinanzas();
+    const db = useSQLiteContext();
+    
+    const [transacciones, setTransacciones] = useState<Transaccion[]>([]);
+    const [categorias, setCategorias] = useState<Categoria[]>([]);
     const [busqueda, setBusqueda] = useState('');
     const [filtroCategoria, setFiltroCategoria] = useState<number | null>(null);
     const [filtroTipo, setFiltroTipo] = useState<'todos' | 'gasto' | 'ingreso'>('todos');
     const [refrescando, setRefrescando] = useState(false);
+    const [cargando, setCargando] = useState(true);
+
+    useEffect(() => {
+        cargarDatos();
+    }, []);
+
+    // Recargar datos cada vez que el screen recibe enfoque
+    useFocusEffect(
+        React.useCallback(() => {
+            cargarDatos();
+        }, [])
+    );
+
+    const cargarDatos = async () => {
+        try {
+            setCargando(true);
+            const transRes = await db.getAllAsync<Transaccion>(
+                'SELECT * FROM transacciones ORDER BY fecha DESC'
+            );
+            const catRes = await db.getAllAsync<Categoria>(
+                'SELECT * FROM categorias'
+            );
+            setTransacciones(transRes);
+            setCategorias(catRes);
+        } catch (err) {
+            console.log('Error al cargar datos:', err);
+        } finally {
+            setCargando(false);
+        }
+    };
 
     const transaccionesFiltradas = transacciones.filter(t => {
         const coincideBusqueda = t.descripcion.toLowerCase().includes(busqueda.toLowerCase());
@@ -31,7 +65,7 @@ export default function MovimientosScreen({ navigation }: Props) {
 
     const handleRefresh = async () => {
         setRefrescando(true);
-        await sincronizar();
+        await cargarDatos();
         setRefrescando(false);
     };
 
@@ -151,7 +185,7 @@ export default function MovimientosScreen({ navigation }: Props) {
                         >
                             <View style={[styles.iconoCategoria, { backgroundColor: obtenerColorCategoria(item.categoria_id) }]}>
                                 <Text style={styles.textoIcono}>
-                                    {item.tipo === 'ingreso' ? '⭨' : '⭧'}
+                                    {item.tipo === 'ingreso' ? '↘' : '↗'}
                                 </Text>
                             </View>
                             <View style={styles.infoMovimiento}>

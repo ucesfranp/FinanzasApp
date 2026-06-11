@@ -1,10 +1,13 @@
-import { View, Text, StyleSheet, FlatList, Pressable, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTema } from '../context/TemaContext';
-import { useFinanzas } from '../context/FinanzasContext';
+import { useSQLiteContext } from 'expo-sqlite';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { showAlert } from '../services/alertUtils';
+import React, { useState, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { Categoria } from './FinanzasTypes';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Categorias'>;
 
@@ -14,9 +17,33 @@ interface Props {
 
 export default function CategoriasScreen({ navigation }: Props) {
     const { colores } = useTema();
-    const { categorias, eliminarCategoria } = useFinanzas();
+    const db = useSQLiteContext();
+    const [categorias, setCategorias] = useState<Categoria[]>([]);
+    const [cargando, setCargando] = useState(true);
 
-    /* Maneja la eliminación de una categoría */
+    useEffect(() => {
+        cargarCategorias();
+    }, []);
+
+    // Recargar categorías cada vez que el screen recibe enfoque
+    useFocusEffect(
+        React.useCallback(() => {
+            cargarCategorias();
+        }, [db])
+    );
+
+    const cargarCategorias = async () => {
+        try {
+            setCargando(true);
+            const result = await db.getAllAsync<Categoria>('SELECT * FROM categorias');
+            setCategorias(result);
+        } catch (err) {
+            console.log('Error al cargar categorías:', err);
+        } finally {
+            setCargando(false);
+        }
+    };
+
     const handleEliminar = (id: number, nombre: string) => {
         showAlert(
             'Eliminar categoría',
@@ -25,13 +52,13 @@ export default function CategoriasScreen({ navigation }: Props) {
                 { text: 'Cancelar', onPress: () => { } },
                 { text: 'Eliminar', onPress: async () => {
                         try {
-                            await eliminarCategoria(id);
-                            Alert.alert('Éxito', 'Categoría eliminada');
+                            await db.runAsync('DELETE FROM categorias WHERE id = ?', [id]);
+                            await cargarCategorias();
+                            showAlert('Éxito', 'Categoría eliminada');
                         } catch (err) {
-                            Alert.alert('Error', 'No se pudo eliminar la categoría');
+                            showAlert('Error', 'No se pudo eliminar la categoría');
                         }
                     },
-                    /* style: 'destructive',  */
                 },
             ]
         );

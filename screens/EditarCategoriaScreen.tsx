@@ -1,9 +1,10 @@
 import { View, Text, StyleSheet, Pressable, TextInput, ScrollView, Alert } from 'react-native';
 import { useTema } from '../context/TemaContext';
-import { useFinanzas } from '../context/FinanzasContext';
+import { useSQLiteContext } from 'expo-sqlite';
 import { useState, useEffect } from 'react';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { showAlert } from '../services/alertUtils';
+import { Categoria } from './FinanzasTypes';
 
 const COLORES_DISPONIBLES = [
     '#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3', 
@@ -15,21 +16,46 @@ export default function EditarCategoriaScreen() {
     const route = useRoute();
     const navigation = useNavigation();
     const { colores } = useTema();
-    const { categorias, editarCategoria } = useFinanzas();
+    const db = useSQLiteContext();
 
     const categoriaId = (route.params as any)?.id;
-    const categoria = categorias.find(c => c.id === categoriaId);
-
-    const [nombre, setNombre] = useState(categoria?.nombre || '');
-    const [colorSeleccionado, setColorSeleccionado] = useState(categoria?.color || COLORES_DISPONIBLES[0]);
+    
+    const [nombre, setNombre] = useState('');
+    const [colorSeleccionado, setColorSeleccionado] = useState(COLORES_DISPONIBLES[0]);
     const [guardando, setGuardando] = useState(false);
+    const [categoria, setCategoria] = useState<Categoria | null>(null);
+    const [cargando, setCargando] = useState(true);
 
     useEffect(() => {
-        if (categoria) {
-            setNombre(categoria.nombre);
-            setColorSeleccionado(categoria.color);
+        cargarCategoria();
+    }, []);
+
+    const cargarCategoria = async () => {
+        try {
+            setCargando(true);
+            const result = await db.getFirstAsync<Categoria>(
+                'SELECT * FROM categorias WHERE id = ?',
+                [categoriaId]
+            );
+            if (result) {
+                setCategoria(result);
+                setNombre(result.nombre);
+                setColorSeleccionado(result.color);
+            }
+        } catch (err) {
+            console.log('Error al cargar categoría:', err);
+        } finally {
+            setCargando(false);
         }
-    }, [categoria]);
+    };
+
+    if (cargando) {
+        return (
+            <View style={[styles.container, { backgroundColor: colores.fondo, justifyContent: 'center', alignItems: 'center' }]}>
+                <Text style={[styles.titulo, { color: colores.texto }]}>Cargando...</Text>
+            </View>
+        );
+    }
 
     if (!categoria) {
         return (
@@ -47,10 +73,10 @@ export default function EditarCategoriaScreen() {
 
         try {
             setGuardando(true);
-            await editarCategoria(categoria.id, {
-                nombre: nombre.trim(),
-                color: colorSeleccionado,
-            });
+            await db.runAsync(
+                'UPDATE categorias SET nombre = ?, color = ? WHERE id = ?',
+                [nombre.trim(), colorSeleccionado, categoria.id]
+            );
 
             showAlert('Éxito', 'Categoría actualizada');
             navigation.goBack();

@@ -1,11 +1,16 @@
-import { View, Text, StyleSheet, Pressable, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTema } from '../context/TemaContext';
-import { useFinanzas } from '../context/FinanzasContext';
+import { useSQLiteContext } from 'expo-sqlite';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { leerPrefs } from '../services/preferencias';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { transaccionesApi } from '../services/transaccionesApi';
+import { showAlert } from '../services/alertUtils';
+import { Transaccion, Categoria } from './FinanzasTypes';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -15,44 +20,154 @@ interface Props {
 
 export default function HomeFinanzasScreen({ navigation }: Props) {
     const { colores } = useTema();
-    const { transacciones, presupuesto, obtenerResumen, cargarDelMockAPI } = useFinanzas();
+    const db = useSQLiteContext();
+    
+    const [transacciones, setTransacciones] = useState<Transaccion[]>([]);
+    const [categorias, setCategorias] = useState<Categoria[]>([]);
+    const [presupuesto, setPresupuesto] = useState(5000);
     const [movimientosCargados, setMovimientosCargados] = useState(false);
     const [cargandoMovimientos, setCargandoMovimientos] = useState(false);
+    const [nombre, setNombre] = useState('');
+    const [cargando, setCargando] = useState(true);
 
-    const ahora = new Date();
-    const mes = ahora.getMonth();
-    const año = ahora.getFullYear();
-    const resumen = obtenerResumen(mes, año);
+    useEffect(() => {
+        cargarDatosIniciales();
+    }, []);
 
+    // Recargar datos cada vez que el screen recibe enfoque
+    useFocusEffect(
+        React.useCallback(() => {
+            cargarDatos();
+            // Recargar nombre también
+            leerPrefs().then(prefs => {
+                if (prefs && prefs.nombre) {
+                    setNombre(prefs.nombre);
+                } else {
+                    setNombre('');
+                }
+            });
+            // Recargar estado del botón
+            AsyncStorage.getItem('movimientosCargados').then(estado => {
+                if (estado !== null) {
+                    setMovimientosCargados(JSON.parse(estado));
+                } else {
+                    setMovimientosCargados(false);
+                }
+            });
+        }, [db])
+    );
+
+    const cargarDatosIniciales = async () => {
+        try {
+            setCargando(true);
+            // Cargar estado del botón desde AsyncStorage
+            const estadoBoton = await AsyncStorage.getItem('movimientosCargados');
+            if (estadoBoton !== null) {
+                setMovimientosCargados(JSON.parse(estadoBoton));
+            }
+            
+            // Cargar datos de la BD
+            await cargarDatos();
+            
+            // Cargar nombre
+            const prefs = await leerPrefs();
+            if (prefs && prefs.nombre) {
+                setNombre(prefs.nombre);
+            }
+        } catch (err) {
+            console.log('Error al cargar datos iniciales:', err);
+        } finally {
+            setCargando(false);
+        }
+    };
+
+    const cargarDatos = async () => {
+        try {
+            const transRes = await db.getAllAsync<Transaccion>(
+                'SELECT * FROM transacciones ORDER BY fecha DESC'
+            );
+            const catRes = await db.getAllAsync<Categoria>(
+                'SELECT * FROM categorias'
+            );
+            const presupuestoRes = await db.getFirstAsync<{ valor: string }>(
+                "SELECT valor FROM preferencias WHERE clave = 'presupuesto_mensual'"
+            );
+            
+            setTransacciones(transRes);
+            setCategorias(catRes);
+            if (presupuestoRes) {
+                setPresupuesto(parseFloat(presupuestoRes.valor));
+            }
+        } catch (err) {
+            console.log('Error al cargar datos:', err);
+        }
+    };
+
+    const obtenerResumen = () => {
+        const totalIngresos = transacciones
+            .filter(t => t.tipo === 'ingreso')
+            .reduce((sum, t) => sum + t.monto, 0);
+
+        const totalGastos = transacciones
+            .filter(t => t.tipo === 'gasto')
+            .reduce((sum, t) => sum + t.monto, 0);
+
+        const disponible = presupuesto + totalIngresos - totalGastos;
+
+        return {
+            totalIngresos,
+            totalGastos,
+            presupuesto,
+            disponible,
+        };
+    };
+
+    const resumen = obtenerResumen();
     const ultimos5 = transacciones.slice(0, 5);
 
-    const [nombre, setNombre] = useState(''); // estado para guardar el nombre leído de las preferencias --> nombre es el estado, setNombre es la función para actualizarlo, y '' es el valor inicial (vacío)
+    const porcentajeColor = resumen.disponible < 0 ? '#FF6B6B' : resumen.disponible < presupuesto * 0.2 ? '#FFE66D' : '#4ECDC4';
 
-    /* Función para cargar movimientos */
     const handleCargarMovimientos = async () => {
         try {
             setCargandoMovimientos(true);
-            await cargarDelMockAPI();
+            
+            // Obtener transacciones del mockapi
+            const response = await transaccionesApi.getAll();
+            const datosDelAPI = response.data;
+            
+            // Guardar cada transacción en la BD local
+            for (const transaccion of datosDelAPI) {
+                try {
+                    await db.runAsync(
+                        `INSERT OR IGNORE INTO transacciones (descripcion, monto, tipo, categoria_id, fecha) 
+                         VALUES (?, ?, ?, ?, ?)`,
+                        [
+                            transaccion.descripcion,
+                            transaccion.monto,
+                            transaccion.tipo,
+                            transaccion.categoria_id,
+                            transaccion.fecha,
+                        ]
+                    );
+                } catch (err) {
+                    console.log('Error al insertar transacción:', err);
+                }
+            }
+            
+            // Recargar datos
+            await cargarDatos();
             setMovimientosCargados(true);
+            
+            // Guardar estado en AsyncStorage
+            await AsyncStorage.setItem('movimientosCargados', JSON.stringify(true));
+            
         } catch (error) {
-            Alert.alert('Error', 'No se pudieron cargar los movimientos');
+            console.log('Error al cargar movimientos:', error);
+            showAlert('Error', 'No se pudieron cargar los movimientos');
         } finally {
             setCargandoMovimientos(false);
         }
     };
-
-    const porcentajeColor = resumen.disponible < 0 ? '#FF6B6B' : resumen.disponible < presupuesto * 0.2 ? '#FFE66D' : '#4ECDC4';
-
-    /* Cargar nombre de las preferencias --> Ajustes */
-    useEffect(() => {
-        async function cargarNombre() {
-            const prefs = await leerPrefs();
-            if (prefs && prefs.nombre) { // esto se lee así: si prefs existe y tiene una propiedad nombre, entonces...
-                setNombre(prefs.nombre); // actualizamos el estado con el nombre leído de las preferencias
-            }
-        }
-        cargarNombre();
-    }, []);
 
     return (
         <View style={[{ flex: 1, backgroundColor: colores.fondo, paddingTop: 50 }]}>
@@ -134,21 +249,6 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
                             </Text>
                         </View>
                     </View>
-
-                    <View style={[styles.progressBar, { backgroundColor: colores.inputBorder }]}>
-                        <View
-                            style={[
-                                styles.progressFill,
-                                {
-                                    width: `${Math.min(resumen.porcentajeUsado, 100)}%`,
-                                    backgroundColor: resumen.porcentajeUsado > 100 ? '#FF6B6B' : '#4ECDC4'
-                                }
-                            ]}
-                        />
-                    </View>
-                    <Text style={[styles.progressTexto, { color: colores.texto }]}>
-                        {resumen.porcentajeUsado.toFixed(1)}% del presupuesto usado
-                    </Text>
                 </View>
 
                 {/* Últimos movimientos */}

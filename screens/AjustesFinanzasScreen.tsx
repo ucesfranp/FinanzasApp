@@ -1,12 +1,15 @@
 import { View, Text, StyleSheet, Pressable, TextInput, ScrollView, Alert, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTema } from '../context/TemaContext';
-import { useFinanzas } from '../context/FinanzasContext';
+import { useSQLiteContext } from 'expo-sqlite';
 import { useState, useEffect } from 'react';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { NavigationProp } from '@react-navigation/native';
 import { guardarPrefs, leerPrefs } from "../services/preferencias";
+import { showAlert } from '../services/alertUtils';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Transaccion, Categoria } from './FinanzasTypes';
 
 type Props = {
     navigation: NavigationProp<RootStackParamList>;
@@ -14,33 +17,61 @@ type Props = {
 
 export default function AjustesFinanzasScreen({ navigation }: Props) {
     const { colores } = useTema();
-    const { presupuesto, establecerPresupuesto } = useFinanzas();
+    const db = useSQLiteContext();
 
-    const [presupuestoNuevo, setPresupuestoNuevo] = useState(presupuesto.toString());
+    const [presupuesto, setPresupuesto] = useState(5000);
+    const [presupuestoNuevo, setPresupuestoNuevo] = useState('5000');
     const [editandoPresupuesto, setEditandoPresupuesto] = useState(false);
     const [guardando, setGuardando] = useState(false);
-    // Estado local para animar el switch sin cambiar el tema global
     const [oscuro, setOscuro] = useState(false);
     const [nombre, setNombre] = useState('');
+    const [cargando, setCargando] = useState(true);
 
     useEffect(() => {
-        setPresupuestoNuevo(presupuesto.toString());
-    }, [presupuesto]);
+        cargarDatos();
+    }, []);
+
+    const cargarDatos = async () => {
+        try {
+            setCargando(true);
+            const presupuestoRes = await db.getFirstAsync<{ valor: string }>(
+                "SELECT valor FROM preferencias WHERE clave = 'presupuesto_mensual'"
+            );
+            if (presupuestoRes) {
+                const val = parseFloat(presupuestoRes.valor);
+                setPresupuesto(val);
+                setPresupuestoNuevo(val.toString());
+            }
+            
+            const prefs = await leerPrefs();
+            if (prefs && prefs.nombre) {
+                setNombre(prefs.nombre);
+            }
+        } catch (err) {
+            console.log('Error al cargar datos:', err);
+        } finally {
+            setCargando(false);
+        }
+    };
 
     const handleGuardarPresupuesto = async () => {
         const monto = parseFloat(presupuestoNuevo);
         if (isNaN(monto) || monto <= 0) {
-            Alert.alert('Error', 'Por favor ingresa un monto válido');
+            showAlert('Error', 'Por favor ingresa un monto válido');
             return;
         }
 
         try {
             setGuardando(true);
-            await establecerPresupuesto(monto);
-            Alert.alert('Éxito', 'Presupuesto actualizado');
+            await db.runAsync(
+                "INSERT OR REPLACE INTO preferencias (clave, valor) VALUES ('presupuesto_mensual', ?)",
+                [monto.toString()]
+            );
+            setPresupuesto(monto);
+            showAlert('Éxito', 'Presupuesto actualizado');
             setEditandoPresupuesto(false);
         } catch (err) {
-            Alert.alert('Error', 'No se pudo actualizar el presupuesto');
+            showAlert('Error', 'No se pudo actualizar el presupuesto');
         } finally {
             setGuardando(false);
         }
@@ -55,6 +86,68 @@ export default function AjustesFinanzasScreen({ navigation }: Props) {
         setNombre(text);
         await guardarPrefs({ nombre: text, temaOscuro: oscuro } as any);
     }
+
+    /* Metodo para el botón de resetear de fabrico */
+    const handleResetearAplicacion = () => {
+        showAlert(
+            'Confirmar',
+            '¿Estás seguro de que quieres resetear la aplicación? Se eliminarán todas tus transacciones y ajustes.',
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Resetear',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            /* Eliminamos el nombre ingresado, el presupuesto ingresado, las categorías ingresadas y los movimientos ingresados */
+                            await guardarPrefs({ nombre: '', temaOscuro: false } as any);
+                            
+                            // Resetear presupuesto a 5000 (valor por defecto)
+                            await db.runAsync(
+                                "INSERT OR REPLACE INTO preferencias (clave, valor) VALUES ('presupuesto_mensual', ?)",
+                                ['5000']
+                            );
+                            
+                            // Eliminar todas las transacciones
+                            await db.runAsync('DELETE FROM transacciones');
+                            
+                            // Eliminar solo las categorías creadas por el usuario
+                            const CATEGORIAS_PREDEFINIDAS_NOMBRES = ['Alimentos', 'Transporte', 'Entretenimiento', 'Servicios', 'Salud', 'Otros'];
+                            const categorias = await db.getAllAsync<Categoria>('SELECT * FROM categorias');
+                            
+                            for (const categoria of categorias) {
+                                if (!CATEGORIAS_PREDEFINIDAS_NOMBRES.includes(categoria.nombre)) {
+                                    await db.runAsync('DELETE FROM categorias WHERE id = ?', [categoria.id]);
+                                }
+                            }
+                            
+                    // Resetear estado del botón de movimientos cargados
+                            await AsyncStorage.setItem('movimientosCargados', JSON.stringify(false));
+                            
+                            // Actualizar estado local
+                            setPresupuesto(5000);
+                            setPresupuestoNuevo('5000');
+                            setNombre('');
+                            
+                            // En web, recargar la página fuerza que todos los estados se reinicien correctamente
+                            if (typeof window !== 'undefined' && window.location) {
+                                window.alert('Éxito\nAplicación reseteada');
+                                window.location.reload();
+                            } else {
+                                showAlert('Éxito', 'Aplicación reseteada');
+                                // Pequeño delay para asegurar que la BD se actualice completamente
+                                await new Promise(resolve => setTimeout(resolve, 500));
+                                navigation.navigate('Home');
+                            }
+                        } catch (error) {
+                            showAlert('Error', 'No se pudieron resetear las preferencias');
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
 
     return (
         <View style={[{ flex: 1, backgroundColor: colores.fondo, paddingTop: 50 }]}>
@@ -191,8 +284,20 @@ export default function AjustesFinanzasScreen({ navigation }: Props) {
                         </View>
                         <Ionicons name="chevron-forward" size={20} color={colores.texto} />
                     </Pressable>
+
+                    {/* Botón para resetear la aplicación */}
+                    <Pressable style={styles.botonReset} onPress={handleResetearAplicacion}>
+                        <Ionicons name="trash" size={20} color={colores.texto} />
+                        <View>
+                            <Text style={[styles.etiqueta, { color: colores.texto }]}>Resetear aplicación</Text>
+                            <Text style={[styles.descripcion, { color: colores.texto, opacity: 0.6 }]}>
+                                Elimina todos los datos y preferencias
+                            </Text>
+                        </View>
+                    </Pressable>
                 </View>
 
+                
                 <View style={{ height: 20 }} />
             </ScrollView>
         </View>
@@ -299,4 +404,16 @@ const styles = StyleSheet.create({
     },
     label: { fontSize: 16, marginBottom: 8 },
     input: { borderWidth: 1, padding: 8, borderRadius: 4, marginBottom: 16 },
+    botonReset: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderRadius: 8,        borderWidth: 1,
+        borderColor: 'transparent',
+        marginTop: 12,
+        gap: 20,
+        /* Color de fondo rojo */
+        backgroundColor: '#ff6d6d',
+    },
 });

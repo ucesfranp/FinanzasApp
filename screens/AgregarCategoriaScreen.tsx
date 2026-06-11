@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Pressable, TextInput, ScrollView, Alert } from 'react-native';
 import { useTema } from '../context/TemaContext';
-import { useFinanzas } from '../context/FinanzasContext';
+import { useSQLiteContext } from 'expo-sqlite';
 import { useState } from 'react';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { showAlert } from '../services/alertUtils';
@@ -24,7 +24,7 @@ const COLORES_DISPONIBLES = [
 
 export default function AgregarCategoriaScreen({ navigation }: Props) {
     const { colores } = useTema();
-    const { agregarCategoria } = useFinanzas();
+    const db = useSQLiteContext();
     
     const [nombre, setNombre] = useState('');
     const [colorSeleccionado, setColorSeleccionado] = useState(COLORES_DISPONIBLES[0]);
@@ -39,10 +39,10 @@ export default function AgregarCategoriaScreen({ navigation }: Props) {
 
         try {
             setGuardando(true);
-            await agregarCategoria({
-                nombre: nombre.trim(),
-                color: colorSeleccionado,
-            });
+            await db.runAsync(
+                'INSERT INTO categorias (nombre, color) VALUES (?, ?)',
+                [nombre.trim(), colorSeleccionado]
+            );
             showAlert('Éxito', 'Categoría creada');
             navigation.goBack();
 
