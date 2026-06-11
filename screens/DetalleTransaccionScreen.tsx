@@ -95,6 +95,7 @@ export default function DetalleTransaccionScreen() {
                     fecha: transaccion.fecha,
                     api_id: transaccion.api_id,
                 };
+                //UPDATE CON API 
                 transaccionesApi.update(transaccion.api_id, transaccionActualizada).catch(err => {
                     console.log('Error al sincronizar con mockAPI:', err);
                 });
@@ -110,6 +111,7 @@ export default function DetalleTransaccionScreen() {
         }
     };
 
+    //ELIMINAR TRANSACCION
     const handleEliminar = () => {
         showAlert(
             'Eliminar transacción',
@@ -128,6 +130,7 @@ export default function DetalleTransaccionScreen() {
                             
                             // Sincronizar con mockAPI (sin bloquear)
                             if (apiId) {
+                                //REMOVE CON API
                                 transaccionesApi.remove(apiId).catch(err => {
                                     console.log('Error al sincronizar eliminación con mockAPI:', err);
                                 });

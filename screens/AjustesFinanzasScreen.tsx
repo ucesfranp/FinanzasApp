@@ -63,6 +63,7 @@ export default function AjustesFinanzasScreen({ navigation }: Props) {
 
         try {
             setGuardando(true);
+            //Guardamos en el presupuesto ingresaod por usuario
             await db.runAsync(
                 "INSERT OR REPLACE INTO preferencias (clave, valor) VALUES ('presupuesto_mensual', ?)",
                 [monto.toString()]
@@ -82,6 +83,7 @@ export default function AjustesFinanzasScreen({ navigation }: Props) {
         setEditandoPresupuesto(false);
     };
 
+    //GUARDAMOS EN ASYNC STORAGE - MEMORIA LOCAL EL NOMBRE INGRESADO POR EL USUARIO
     async function handleNombre(text: string) {
         setNombre(text);
         await guardarPrefs({ nombre: text, temaOscuro: oscuro } as any);
@@ -102,13 +104,13 @@ export default function AjustesFinanzasScreen({ navigation }: Props) {
                             /* Eliminamos el nombre ingresado, el presupuesto ingresado, las categorías ingresadas y los movimientos ingresados */
                             await guardarPrefs({ nombre: '', temaOscuro: false } as any);
                             
-                            // Resetear presupuesto a 5000 (valor por defecto)
+                            // Resetear presupuesto a 5000 (valor por defecto) CON SQLITE
                             await db.runAsync(
                                 "INSERT OR REPLACE INTO preferencias (clave, valor) VALUES ('presupuesto_mensual', ?)",
                                 ['5000']
                             );
                             
-                            // Eliminar todas las transacciones
+                            // Eliminar todas las transacciones con SQLITE
                             await db.runAsync('DELETE FROM transacciones');
                             
                             // Eliminar solo las categorías creadas por el usuario

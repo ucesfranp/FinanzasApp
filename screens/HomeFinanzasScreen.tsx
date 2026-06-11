@@ -69,7 +69,7 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
             // Cargar datos de la BD
             await cargarDatos();
             
-            // Cargar nombre
+            // Cargar nombre que se seteo en la screen de ajustes
             const prefs = await leerPrefs();
             if (prefs && prefs.nombre) {
                 setNombre(prefs.nombre);

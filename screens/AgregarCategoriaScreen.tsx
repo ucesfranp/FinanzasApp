@@ -30,7 +30,7 @@ export default function AgregarCategoriaScreen({ navigation }: Props) {
     const [colorSeleccionado, setColorSeleccionado] = useState(COLORES_DISPONIBLES[0]);
     const [guardando, setGuardando] = useState(false);
 
-    /* Maneja la lógica para guardar la categoría */
+    /* lógica para guardar la categoría */
     const handleGuardar = async () => {
         if (!nombre.trim()) {
             showAlert('Error', 'Por favor ingresa un nombre para la categoría');
@@ -39,6 +39,7 @@ export default function AgregarCategoriaScreen({ navigation }: Props) {
 
         try {
             setGuardando(true);
+            //AGREGAR A BASE DE DATOS LOCAL
             await db.runAsync(
                 'INSERT INTO categorias (nombre, color) VALUES (?, ?)',
                 [nombre.trim(), colorSeleccionado]

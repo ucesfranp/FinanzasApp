@@ -34,6 +34,7 @@ export default function EditarCategoriaScreen() {
     const cargarCategoria = async () => {
         try {
             setCargando(true);
+            //OBTENEMOS CON SQLITE EL ID DE LA CATEOGORÍA SELECCIONADA PARA EDITAR
             const result = await db.getFirstAsync<Categoria>(
                 'SELECT * FROM categorias WHERE id = ?',
                 [categoriaId]
@@ -74,6 +75,7 @@ export default function EditarCategoriaScreen() {
 
         try {
             setGuardando(true);
+            //AGREGAMOS EN CASO DE HABER EDITADO LA CATEGORÍA SU NOMBRE Y COLOR
             await db.runAsync(
                 'UPDATE categorias SET nombre = ?, color = ? WHERE id = ?',
                 [nombre.trim(), colorSeleccionado, categoria.id]
