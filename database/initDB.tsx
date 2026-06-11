@@ -32,5 +32,12 @@ export async function initDB(
             clave TEXT PRIMARY KEY,
             valor TEXT
         );
+
+        INSERT OR IGNORE INTO categorias (nombre, color) VALUES ('Alimentos', '#FF6B6B');
+        INSERT OR IGNORE INTO categorias (nombre, color) VALUES ('Transporte', '#4ECDC4');
+        INSERT OR IGNORE INTO categorias (nombre, color) VALUES ('Entretenimiento', '#FFE66D');
+        INSERT OR IGNORE INTO categorias (nombre, color) VALUES ('Servicios', '#95E1D3');
+        INSERT OR IGNORE INTO categorias (nombre, color) VALUES ('Salud', '#A8E6CF');
+        INSERT OR IGNORE INTO categorias (nombre, color) VALUES ('Otros', '#C7CEEA');
     `);
 }
