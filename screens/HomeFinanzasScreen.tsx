@@ -34,7 +34,7 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
         cargarDatosIniciales();
     }, []);
 
-    // Recargar datos cada vez que el screen recibe enfoque
+    // Recargar datos cada vez que el screen recibe enfoque --> Esto es útil para reflejar cambios realizados en otras pantallas (ej: agregar transacción, cambiar nombre, etc.)
     useFocusEffect(
         React.useCallback(() => {
             cargarDatos();
@@ -46,7 +46,7 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
                     setNombre('');
                 }
             });
-            // Recargar estado del botón
+            // Recargar estado del botón --> Una vez que se cargan los movimientos, el botón se oculta. Si el usuario vuelve a la pantalla, queremos mantener ese estado.
             AsyncStorage.getItem('movimientosCargados').then(estado => {
                 if (estado !== null) {
                     setMovimientosCargados(JSON.parse(estado));
@@ -83,6 +83,7 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
 
     const cargarDatos = async () => {
         try {
+            //Esto es lo que aprendimos de expo SQLite: para obtener datos, no se puede usar el método "all" del DB, sino que hay que ejecutar una consulta SQL y luego mapear los resultados. Por eso hacemos tres consultas: una para transacciones, otra para categorías y otra para el presupuesto.
             const transRes = await db.getAllAsync<Transaccion>(
                 'SELECT * FROM transacciones ORDER BY fecha DESC'
             );
@@ -103,6 +104,7 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
         }
     };
 
+    // Función para calcular el resumen del mes (total ingresos, total gastos, presupuesto y disponible)
     const obtenerResumen = () => {
         const totalIngresos = transacciones
             .filter(t => t.tipo === 'ingreso')
@@ -125,10 +127,12 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
     const resumen = obtenerResumen();
     const ultimos5 = transacciones.slice(0, 5);
 
+    //Esto es para cambiar el color de fondo de la tarjeta principal según el porcentaje del presupuesto disponible. Si el disponible es negativo, rojo. Si el disponible es menor al 20% del presupuesto, amarillo. Si el disponible es mayor al 20% del presupuesto, verde.
     const porcentajeColor = resumen.disponible < 0 ? '#FF6B6B' : resumen.disponible < presupuesto * 0.2 ? '#FFE66D' : '#4ECDC4';
 
     const handleCargarMovimientos = async () => {
         try {
+            // Evitar múltiples cargas simultáneas
             setCargandoMovimientos(true);
             
             // Obtener transacciones del mockapi
@@ -223,6 +227,7 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
                 </View>
 
                 {/* Alerta si supera presupuesto */}
+                {/* esto lo que hace es mostrar una alerta si el disponible es negativo. El "&&" es para que se muestre solo si la condición es verdadera */}
                 {resumen.disponible < 0 && (
                     <View style={[styles.alerta, { backgroundColor: 'rgba(255, 107, 107, 0.1)', borderColor: '#FF6B6B' }]}>
                         <Ionicons name="alert-circle" size={20} color="#FF6B6B" />

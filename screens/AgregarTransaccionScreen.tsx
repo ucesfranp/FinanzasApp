@@ -79,7 +79,7 @@ export default function AgregarTransaccionScreen({ navigation }: Props) {
                 [descripcion.trim(), montoNum, tipo, categoriaId, fecha.trim()]
             );
 
-            // Intentar sincronizar con mockAPI (sin bloquear)
+            // sincronizar con mockAPI
             const transaccionParaAPI = {
                 descripcion: descripcion.trim(),
                 monto: montoNum,

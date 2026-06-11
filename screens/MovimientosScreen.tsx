@@ -26,11 +26,12 @@ export default function MovimientosScreen({ navigation }: Props) {
     const [refrescando, setRefrescando] = useState(false);
     const [cargando, setCargando] = useState(true);
 
+    // Cargar datos al montar el screen. Esta metido dentro del useEffect para evitar que se ejecute cada vez que se actualice el estado de busqueda o filtros, lo cual causaria un loop infinito de renderizados. El useFocusEffect se encarga de recargar los datos cada vez que el screen recibe foco, lo cual es util para reflejar cambios realizados en otros screens (como agregar o editar transacciones) sin necesidad de recargar manualmente.
     useEffect(() => {
         cargarDatos();
     }, []);
 
-    // Recargar datos cada vez que el screen recibe enfoque
+    // Recargar datos cada vez que el screen recibe enfoque, lo cual es útil para reflejar cambios realizados en otros screens (como agregar o editar transacciones) sin necesidad de recargar manualmente. El useFocusEffect se encarga de ejecutar la función cada vez que el screen recibe foco, y el React.useCallback evita que se cree una nueva función en cada renderizado, lo cual optimiza el rendimiento.
     useFocusEffect(
         React.useCallback(() => {
             cargarDatos();
@@ -55,12 +56,12 @@ export default function MovimientosScreen({ navigation }: Props) {
         }
     };
 
+
     const transaccionesFiltradas = transacciones.filter(t => {
         const coincideBusqueda = t.descripcion.toLowerCase().includes(busqueda.toLowerCase());
-        const coincideCategoria = filtroCategoria === null || t.categoria_id === filtroCategoria;
         const coincideTipo = filtroTipo === 'todos' || t.tipo === filtroTipo;
 
-        return coincideBusqueda && coincideCategoria && coincideTipo;
+        return coincideBusqueda && coincideTipo;
     });
 
     const handleRefresh = async () => {
@@ -155,15 +156,6 @@ export default function MovimientosScreen({ navigation }: Props) {
                     </Text>
                 </Pressable>
 
-                {/* Botón de categoría seleccionada */} 
-                {/* {filtroCategoria !== null && (
-                    <Pressable style={[styles.botonFiltro, { backgroundColor: obtenerColorCategoria(filtroCategoria), opacity: 0.8 }]}
-                        onPress={() => setFiltroCategoria(null)}>
-                        <Text style={[styles.textoFiltro, { color: 'white', fontWeight: 'bold' }]}>
-                            ✕ {obtenerNombreCategoria(filtroCategoria)}
-                        </Text>
-                    </Pressable>
-                )} */}
             </View>
 
             {/* Lista de movimientos */}
