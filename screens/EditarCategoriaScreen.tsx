@@ -6,6 +6,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { showAlert } from '../services/alertUtils';
 import { Categoria } from './FinanzasTypes';
 
+
 // Colores predefinidos para las categorías 
 const COLORES_DISPONIBLES = [
     '#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3', 

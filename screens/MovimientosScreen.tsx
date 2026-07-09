@@ -7,6 +7,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { Transaccion, Categoria } from './FinanzasTypes';
+import BottomNav from '../components/BottomNav';
+
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Movimientos'>;
 
@@ -83,30 +85,6 @@ export default function MovimientosScreen({ navigation }: Props) {
     return (
         <View style={[styles.container, { backgroundColor: colores.fondo, paddingTop: 50 }]}>
             
-            {/* Botones de navegación */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 10 }}>
-                <Pressable
-                    style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
-                    onPress={() => navigation.navigate('Home')}
-                >
-                    <Text style={styles.botonTxt}>Home</Text>
-                </Pressable>
-                <Pressable
-                    style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
-                    onPress={() => navigation.navigate('Categorias')}
-                >
-                    <Text style={styles.botonTxt}>Categorias</Text>
-                </Pressable>
-                <Pressable
-                    style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
-                    onPress={() => navigation.navigate('Ajustes')}
-                >
-                    <Text style={styles.botonTxt}>Ajustes</Text>
-                </Pressable>
-            </View>
-
-
-
             {/* Header */}
             <View style={styles.header}>
                 <Text style={[styles.titulo, { color: colores.textoPrimario }]}>Movimientos</Text>
@@ -133,9 +111,9 @@ export default function MovimientosScreen({ navigation }: Props) {
             {/* Filtros */}
             <View style={[styles.filtros, {justifyContent: 'center', alignItems: 'center'}]}>
                 {/* Botón "Todos" */}
-                <Pressable style={[styles.botonFiltro, filtroTipo === 'todos' && { backgroundColor: colores.textoPrimario }]}
+                <Pressable style={[styles.botonFiltro, filtroTipo === 'todos' && { backgroundColor: '#E5E7EB' }]}
                     onPress={() => setFiltroTipo('todos')}>
-                    <Text style={[styles.textoFiltro, filtroTipo === 'todos' && { color: 'white', fontWeight: 'bold' }]}>
+                    <Text style={[styles.textoFiltro, filtroTipo === 'todos' && { color: 'black', fontWeight: 'bold' }]}>
                         Todos
                     </Text>
                 </Pressable>
@@ -203,6 +181,7 @@ export default function MovimientosScreen({ navigation }: Props) {
                     contentContainerStyle={{ paddingBottom: 20 }}
                 />
             )}
+            <BottomNav current="Movimientos" />
         </View>
     );
 }

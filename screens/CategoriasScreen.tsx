@@ -8,6 +8,7 @@ import { showAlert } from '../services/alertUtils';
 import React, { useState, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { Categoria } from './FinanzasTypes';
+import BottomNav from '../components/BottomNav';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Categorias'>;
 
@@ -67,29 +68,6 @@ export default function CategoriasScreen({ navigation }: Props) {
     return (
         <View style={[{ flex: 1, backgroundColor: colores.fondo, paddingTop: 50 }]}>
             
-            {/* Botones de navegación */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 10 }}>
-                <Pressable
-                    style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
-                    onPress={() => navigation.navigate('Home')}
-                >
-                    <Text style={styles.botonTxt}>Home</Text>
-                </Pressable>
-                <Pressable
-                    style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
-                    onPress={() => navigation.navigate('Movimientos')}
-                >
-                    <Text style={styles.botonTxt}>Movimientos</Text>
-                </Pressable>
-                <Pressable
-                    style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
-                    onPress={() => navigation.navigate('Ajustes')}
-                >
-                    <Text style={styles.botonTxt}>Ajustes</Text>
-                </Pressable>
-            </View>
-
-
             <View style={[styles.container, { backgroundColor: colores.fondo }]}>
 
                 {/* Header */}
@@ -147,6 +125,7 @@ export default function CategoriasScreen({ navigation }: Props) {
                     />
                 )}
             </View>
+            <BottomNav current="Categorias" />
         </View>
     );
 }

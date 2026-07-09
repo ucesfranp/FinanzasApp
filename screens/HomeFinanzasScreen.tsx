@@ -11,6 +11,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { transaccionesApi } from '../services/transaccionesApi';
 import { showAlert } from '../services/alertUtils';
 import { Transaccion, Categoria } from './FinanzasTypes';
+import BottomNav from '../components/BottomNav';
+
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -176,32 +178,6 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
 
     return (
         <View style={[{ flex: 1, backgroundColor: colores.fondo, paddingTop: 50 }]}>
-
-            {/* Botones de navegación */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 10 }}>
-                <Pressable
-                    style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
-                    onPress={() => navigation.navigate('Movimientos')}
-                >
-                    <Text style={styles.botonTxt}>Movimientos</Text>
-                </Pressable>
-                <Pressable
-                    style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
-                    onPress={() => navigation.navigate('Categorias')}
-                >
-                    <Text style={styles.botonTxt}>Categorias</Text>
-                </Pressable>
-                <Pressable
-                    style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
-                    onPress={() => navigation.navigate('Ajustes')}
-                >
-                    <Text style={styles.botonTxt}>Ajustes</Text>
-                </Pressable>
-            </View>
-
-
-
-
             <ScrollView style={styles.container}>
                 {/* Header */}
                 <View style={styles.header}>
@@ -313,6 +289,7 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
 
                 <View style={{ height: 20 }} />
             </ScrollView>
+            <BottomNav current="Home" />
         </View>
     );
 }

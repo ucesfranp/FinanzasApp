@@ -10,20 +10,21 @@ import { guardarPrefs, leerPrefs } from "../services/preferencias";
 import { showAlert } from '../services/alertUtils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Transaccion, Categoria } from './FinanzasTypes';
+import BottomNav from '../components/BottomNav';
+
 
 type Props = {
     navigation: NavigationProp<RootStackParamList>;
 };
 
 export default function AjustesFinanzasScreen({ navigation }: Props) {
-    const { colores } = useTema();
+    const { colores, oscuro, cambiarTema } = useTema();
     const db = useSQLiteContext();
 
     const [presupuesto, setPresupuesto] = useState(5000);
     const [presupuestoNuevo, setPresupuestoNuevo] = useState('5000');
     const [editandoPresupuesto, setEditandoPresupuesto] = useState(false);
     const [guardando, setGuardando] = useState(false);
-    const [oscuro, setOscuro] = useState(false);
     const [nombre, setNombre] = useState('');
     const [cargando, setCargando] = useState(true);
 
@@ -84,7 +85,8 @@ export default function AjustesFinanzasScreen({ navigation }: Props) {
 
     async function handleNombre(text: string) {
         setNombre(text);
-        await guardarPrefs({ nombre: text, temaOscuro: oscuro } as any);
+        const prefs = await leerPrefs();
+        await guardarPrefs({ nombre: text, temaOscuro: Boolean(prefs?.temaOscuro) });
     }
 
     /* Metodo para el botón de resetear de fabrico */
@@ -151,30 +153,6 @@ export default function AjustesFinanzasScreen({ navigation }: Props) {
 
     return (
         <View style={[{ flex: 1, backgroundColor: colores.fondo, paddingTop: 50 }]}>
-            
-            {/* Botones de navegación */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 10 }}>
-                <Pressable
-                    style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
-                    onPress={() => navigation.navigate('Home')}
-                >
-                    <Text style={styles.botonTxt}>Home</Text>
-                </Pressable>
-                <Pressable
-                    style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
-                    onPress={() => navigation.navigate('Movimientos')}
-                >
-                    <Text style={styles.botonTxt}>Movimientos</Text>
-                </Pressable>
-                <Pressable
-                    style={[styles.boton, { marginTop: 20, backgroundColor: colores.boton }]}
-                    onPress={() => navigation.navigate('Ajustes')}
-                >
-                    <Text style={styles.botonTxt}>Ajustes</Text>
-                </Pressable>
-            </View>
-
-
             <ScrollView style={[styles.container, { backgroundColor: colores.fondo }]}>
                 {/* Header */}
                 <View style={styles.header}>
@@ -206,7 +184,7 @@ export default function AjustesFinanzasScreen({ navigation }: Props) {
                         </View>
                         <Switch
                             value={oscuro}
-                            onValueChange={(valor) => setOscuro(valor)}
+                            onValueChange={(valor) => cambiarTema(valor)}
                             trackColor={{ false: '#ccc', true: colores.boton }}
                             thumbColor={oscuro ? colores.textoPrimario : '#f4f3f4'}
                         />
@@ -300,6 +278,7 @@ export default function AjustesFinanzasScreen({ navigation }: Props) {
                 
                 <View style={{ height: 20 }} />
             </ScrollView>
+            <BottomNav current="Ajustes" />
         </View>
     );
 }
