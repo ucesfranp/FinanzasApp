@@ -1,6 +1,5 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import AgregarTransaccionScreen from '../../screens/AgregarTransaccionScreen';
 
 // variable de mock para simular la base de datos SQLite
 const mockDB = {
@@ -9,7 +8,7 @@ const mockDB = {
 };
 
 // variable de mock para simular la navegación
-const mockNavigation = { navigate: jest.fn() } as any;
+const mockNavigation = { navigate: jest.fn(), goBack: jest.fn() } as any;
 
 // variable de mock para simular el contexto de tema
 const mockCreate = jest.fn();
@@ -55,7 +54,7 @@ jest.mock('expo-sqlite', () => ({
 }));
 
 // Importamos el componente que vamos a probar
-//const AgregarTransaccionScreen = require('../../screens/AgregarTransaccionScreen').default;
+const AgregarTransaccionScreen = require('../../screens/AgregarTransaccionScreen').default;
 
 describe('<AgregarTransaccionScreen />', () => {
 

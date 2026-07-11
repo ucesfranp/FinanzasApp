@@ -50,7 +50,7 @@ export default function PagoItem({ pago, onTogglePaid, onEliminar }: Props) {
             </View>
 
             <Pressable accessibilityLabel={`delete-${pago.id}`} onPress={() => onEliminar(pago.id)} style={styles.delete}>
-                <Text style={styles.deleteText}>X</Text>
+                <Text style={styles.deleteText}>❌</Text>
             </Pressable>
         </View>
     )
