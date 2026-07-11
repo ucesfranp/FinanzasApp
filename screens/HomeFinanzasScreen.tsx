@@ -13,6 +13,9 @@ import { showAlert } from '../services/alertUtils';
 import { Transaccion, Categoria } from './FinanzasTypes';
 import BottomNav from '../components/BottomNav';
 
+//Función de presupuesto importado de services/presupuestoUtils.ts
+import { calcularResumenPresupuesto } from '../services/presupuestoUtils';
+
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -106,8 +109,10 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
         }
     };
 
+
+    //Esta función fue tachada (debería ser borrada) porque ahora uso la función importada de services/presupuestoUtils.ts para calcular el resumen del presupuesto. La dejo comentada por si acaso, pero debería ser eliminada en el futuro.
     // Función para calcular el resumen del mes (total ingresos, total gastos, presupuesto y disponible)
-    const obtenerResumen = () => {
+    /* const obtenerResumen = () => {
         const totalIngresos = transacciones
             .filter(t => t.tipo === 'ingreso')
             .reduce((sum, t) => sum + t.monto, 0);
@@ -124,9 +129,9 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
             presupuesto,
             disponible,
         };
-    };
+    }; */
 
-    const resumen = obtenerResumen();
+    const resumen = calcularResumenPresupuesto(transacciones, presupuesto); // Usamos la función importada de services/presupuestoUtils.ts para calcular el resumen del presupuesto.
     const ultimos5 = transacciones.slice(0, 5);
 
     //Esto es para cambiar el color de fondo de la tarjeta principal según el porcentaje del presupuesto disponible. Si el disponible es negativo, rojo. Si el disponible es menor al 20% del presupuesto, amarillo. Si el disponible es mayor al 20% del presupuesto, verde.

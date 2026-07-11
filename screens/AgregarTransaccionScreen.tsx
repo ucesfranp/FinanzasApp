@@ -130,10 +130,11 @@ export default function AgregarTransaccionScreen({ navigation }: Props) {
             <View style={styles.seccion}>
                 <Text style={[styles.label, { color: colores.textoPrimario }]}>Descripción</Text>
                 <TextInput
-                    placeholder="Ej: Compra en supermercado"
-                    placeholderTextColor={colores.texto}
-                    style={[styles.input, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder, color: colores.texto }]}
-                    value={descripcion}
+                   accessibilityLabel="descripcion-input"
+                   placeholder="Ej: Compra en supermercado"
+                   placeholderTextColor={colores.texto}
+                   style={[styles.input, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder, color: colores.texto }]}
+                   value={descripcion}
                     onChangeText={setDescripcion}
                     editable={!guardando}
                 />
@@ -145,6 +146,7 @@ export default function AgregarTransaccionScreen({ navigation }: Props) {
                 <View style={[styles.inputMonto, { borderColor: colores.inputBorder }]}>
                     <Text style={[styles.simbolo, { color: colores.texto }]}>$</Text>
                     <TextInput
+                        accessibilityLabel="monto-input"
                         placeholder="0.00"
                         placeholderTextColor={colores.texto}
                         style={[styles.inputNumero,{ color: colores.texto }]}
@@ -160,10 +162,11 @@ export default function AgregarTransaccionScreen({ navigation }: Props) {
             <View style={styles.seccion}>
                 <Text style={[styles.label, { color: colores.textoPrimario }]}>Fecha (YYYY-MM-DD)</Text>
                 <TextInput
-                    placeholder="Ej: 2024-06-10"
-                    placeholderTextColor={colores.texto}
-                    style={[styles.input, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder, color: colores.texto }]}
-                    value={fecha}
+                   accessibilityLabel="fecha-input"
+                   placeholder="Ej: 2024-06-10"
+                   placeholderTextColor={colores.texto}
+                   style={[styles.input, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder, color: colores.texto }]}
+                   value={fecha}
                     onChangeText={setFecha}
                     editable={!guardando}
                 />
@@ -196,7 +199,8 @@ export default function AgregarTransaccionScreen({ navigation }: Props) {
                     <Text style={[styles.textoBotonCancelar, { color: colores.texto }]}>Cancelar</Text>
                 </Pressable>
 
-                <Pressable 
+                <Pressable
+                    accessibilityLabel="guardar-transaccion"
                     style={[styles.botonGuardar, { backgroundColor: colores.boton }]}
                     onPress={handleGuardar}
                     disabled={guardando}

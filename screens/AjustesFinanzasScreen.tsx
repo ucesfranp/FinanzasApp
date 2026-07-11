@@ -197,6 +197,7 @@ export default function AjustesFinanzasScreen({ navigation }: Props) {
                         <Text style={[styles.tituloSeccion, { color: colores.textoPrimario }]}>Presupuesto Mensual</Text>
                         {!editandoPresupuesto && (
                             <Pressable
+                                accessibilityLabel="editar-presupuesto"
                                 onPress={() => setEditandoPresupuesto(true)}
                             >
                                 <Ionicons name="pencil" size={20} color={colores.textoPrimario} />
@@ -209,6 +210,7 @@ export default function AjustesFinanzasScreen({ navigation }: Props) {
                             <View style={[styles.inputMonto, { borderColor: colores.inputBorder }]}>
                                 <Text style={[styles.simbolo, { color: colores.texto }]}>$</Text>
                                 <TextInput
+                                    accessibilityLabel="presupuesto-input"
                                     placeholder="0.00"
                                     placeholderTextColor={colores.texto}
                                     style={[styles.inputNumero, { color: colores.texto }]}
@@ -227,7 +229,9 @@ export default function AjustesFinanzasScreen({ navigation }: Props) {
                                     <Text style={[styles.textoBotonMonto, { color: colores.texto }]}>Cancelar</Text>
                                 </Pressable>
 
-                                <Pressable style={[styles.botonMonto, { backgroundColor: colores.boton }]}
+                                <Pressable
+                                    accessibilityLabel="guardar-presupuesto"
+                                    style={[styles.botonMonto, { backgroundColor: colores.boton }]}
                                     onPress={handleGuardarPresupuesto}
                                     disabled={guardando}>
                                     <Text style={styles.textoBotonMontoGuardar}>
