@@ -1,5 +1,6 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import AgregarTransaccionScreen from '../../screens/AgregarTransaccionScreen';
 
 // variable de mock para simular la base de datos SQLite
 const mockDB = {
@@ -8,9 +9,7 @@ const mockDB = {
 };
 
 // variable de mock para simular la navegación
-const mockNavigation = {
-    goBack: jest.fn(),
-};
+const mockNavigation = { navigate: jest.fn() } as any;
 
 // variable de mock para simular el contexto de tema
 const mockCreate = jest.fn();
@@ -18,6 +17,8 @@ const mockCreate = jest.fn();
 // variable de mock para simular la función showAlert
 const mockShowAlert = jest.fn();
 
+
+// Simulamos el contexto de tema para que devuelva un tema claro con colores específicos
 jest.mock('../../context/TemaContext', () => ({
     useTema: () => ({
         oscuro: false,
@@ -32,25 +33,33 @@ jest.mock('../../context/TemaContext', () => ({
     }),
 }));
 
+// Simulamos la función showAlert para que podamos verificar si se llama correctamente
 jest.mock('../../services/alertUtils', () => ({
     __esModule: true,
     showAlert: mockShowAlert,
 }));
 
+// Simulamos la API de transacciones para que podamos verificar si se llama correctamente
 jest.mock('../../services/transaccionesApi', () => ({
+    //__esModule es necesario para que Jest pueda manejar correctamente los módulos ES6, es decir, para que pueda importar y exportar correctamente las funciones y objetos del módulo. Sin esto, Jest podría no reconocer las exportaciones del módulo y lanzar errores al intentar importarlas.
     __esModule: true,
     transaccionesApi: {
         create: mockCreate,
     },
 }));
 
+
+// Simulamos el contexto de SQLite para que devuelva nuestra base de datos mock
 jest.mock('expo-sqlite', () => ({
     useSQLiteContext: () => mockDB,
 }));
 
-const AgregarTransaccionScreen = require('../../screens/AgregarTransaccionScreen').default;
+// Importamos el componente que vamos a probar
+//const AgregarTransaccionScreen = require('../../screens/AgregarTransaccionScreen').default;
 
-describe('AgregarTransaccionScreen', () => {
+describe('<AgregarTransaccionScreen />', () => {
+
+    // Limpiamos los mocks antes de cada prueba para evitar interferencias entre pruebas
     beforeEach(() => {
         jest.clearAllMocks();
         mockDB.getAllAsync.mockResolvedValue([{ id: 1, nombre: 'Alimentos', color: '#f59e0b' }]);
@@ -59,7 +68,7 @@ describe('AgregarTransaccionScreen', () => {
     });
 
     it('guarda una transacción válida y navega de vuelta', async () => {
-        await render(<AgregarTransaccionScreen navigation={mockNavigation as any} />);
+        await render(<AgregarTransaccionScreen navigation={mockNavigation} />);
         await waitFor(() => {
             expect(mockDB.getAllAsync).toHaveBeenCalledTimes(1);
         });

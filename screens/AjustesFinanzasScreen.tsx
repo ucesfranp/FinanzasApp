@@ -21,8 +21,8 @@ export default function AjustesFinanzasScreen({ navigation }: Props) {
     const { colores, oscuro, cambiarTema } = useTema();
     const db = useSQLiteContext();
 
-    const [presupuesto, setPresupuesto] = useState(5000);
-    const [presupuestoNuevo, setPresupuestoNuevo] = useState('5000');
+    const [presupuesto, setPresupuesto] = useState(0);
+    const [presupuestoNuevo, setPresupuestoNuevo] = useState('0');
     const [editandoPresupuesto, setEditandoPresupuesto] = useState(false);
     const [guardando, setGuardando] = useState(false);
     const [nombre, setNombre] = useState('');
@@ -104,10 +104,10 @@ export default function AjustesFinanzasScreen({ navigation }: Props) {
                             /* Eliminamos el nombre ingresado, el presupuesto ingresado, las categorías ingresadas y los movimientos ingresados */
                             await guardarPrefs({ nombre: '', temaOscuro: false } as any);
                             
-                            // Resetear presupuesto a 5000 (valor por defecto)
+                            // Resetear presupuesto a 0 (valor por defecto)
                             await db.runAsync(
                                 "INSERT OR REPLACE INTO preferencias (clave, valor) VALUES ('presupuesto_mensual', ?)",
-                                ['5000']
+                                ['0']
                             );
                             
                             // Eliminar todas las transacciones
@@ -123,12 +123,15 @@ export default function AjustesFinanzasScreen({ navigation }: Props) {
                                 }
                             }
                             
-                    // Resetear estado del botón de movimientos cargados
+                            // Resetear estado del botón de movimientos cargados
                             await AsyncStorage.setItem('movimientosCargados', JSON.stringify(false));
+
+                            // Eliminarmos todos los pagos pendientes ingresados por el usuario
+                            await AsyncStorage.removeItem('pagos_pendientes');
                             
                             // Actualizar estado local
-                            setPresupuesto(5000);
-                            setPresupuestoNuevo('5000');
+                            setPresupuesto(0);
+                            setPresupuestoNuevo('0');
                             setNombre('');
                             
                             // En web, recargar la página fuerza que todos los estados se reinicien correctamente

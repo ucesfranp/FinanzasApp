@@ -15,6 +15,9 @@ import DetalleTransaccionScreen from '../screens/DetalleTransaccionScreen';
 import AgregarCategoriaScreen from '../screens/AgregarCategoriaScreen';
 import EditarCategoriaScreen from '../screens/EditarCategoriaScreen';
 
+
+import PagosPendientesScreen from '../screens/PagosPendientesScreen';
+
 // Stack tipado: sabe qué pantallas existen y sus parámetros
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -36,6 +39,8 @@ export default function StackNavigator() {
       
       <Stack.Screen name="AgregarCategoria" component={AgregarCategoriaScreen} />
       <Stack.Screen name="EditarCategoria" component={EditarCategoriaScreen} />
+
+      <Stack.Screen name="PagosPendientes" component={PagosPendientesScreen} />
     </Stack.Navigator>
   );
 }

@@ -29,7 +29,7 @@ export default function HomeFinanzasScreen({ navigation }: Props) {
     
     const [transacciones, setTransacciones] = useState<Transaccion[]>([]);
     const [categorias, setCategorias] = useState<Categoria[]>([]);
-    const [presupuesto, setPresupuesto] = useState(5000);
+    const [presupuesto, setPresupuesto] = useState(0);
     const [movimientosCargados, setMovimientosCargados] = useState(false);
     const [cargandoMovimientos, setCargandoMovimientos] = useState(false);
     const [nombre, setNombre] = useState('');

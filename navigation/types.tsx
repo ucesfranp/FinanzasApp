@@ -14,4 +14,5 @@ export type RootStackParamList = {
   EditarCategoria: {
     id: number;
   };
+  PagosPendientes: undefined;
 };

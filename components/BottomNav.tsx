@@ -9,7 +9,7 @@ import { RootStackParamList } from '../navigation/types';
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 interface BottomNavProps {
-  current: 'Home' | 'Movimientos' | 'Categorias' | 'Ajustes';
+  current: 'Home' | 'Movimientos' | 'Categorias' | 'Ajustes' | 'PagosPendientes'; // Agregamos PagosPendientes al tipo
 }
 
 export default function BottomNav({ current }: BottomNavProps) {
@@ -19,6 +19,8 @@ export default function BottomNav({ current }: BottomNavProps) {
   const items = [
     { name: 'Home', icon: 'home-outline' as const, label: 'Inicio' },
     { name: 'Movimientos', icon: 'swap-horizontal-outline' as const, label: 'Movs.' },
+    //Agrego PagosPendientes al BottomNav
+    { name: 'PagosPendientes', icon: 'checkmark-circle-outline' as const, label: 'Pagos' },
     { name: 'Categorias', icon: 'pricetag-outline' as const, label: 'Cat.' },
     { name: 'Ajustes', icon: 'settings-outline' as const, label: 'Ajustes' },
   ];
