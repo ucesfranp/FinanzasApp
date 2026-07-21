@@ -31,10 +31,25 @@ PASOS A SEGUIR PARA INSTALAR LAS DEPENDENCIAS --> Comandos CMD
 12- npx expo install expo-sqlite
 
 
-Aclaración:
-Instalacion y configuracion de expo-sqlite
-Error: Metro no resuelve wa-sqlite.wasm en web.
-Causa: expo-sqlite en web usa WASM; Metro no lo empaqueta por defecto.
-Fix: metro.config.js → config.resolver.assetExts.push('wasm').
-Reinicio: npx expo start --web --clear.
-Clase: priorizar móvil; web = configuración extra.
+13- npx expo install jest-expo --save-dev
+
+14- npx expo install jest-expo jest @types/jest -dev 
+    npx expo install @testing-library/react-native -dev
+
+
+--> Correr los tests:
+    - npm run test
+    - npx jest
+
+
+--> Ejecutar app:
+    - npx expo start
+
+
+--> Aclaración:
+    Instalacion y configuracion de expo-sqlite
+    Error: Metro no resuelve wa-sqlite.wasm en web.
+    Causa: expo-sqlite en web usa WASM; Metro no lo empaqueta por defecto.
+    Fix: metro.config.js → config.resolver.assetExts.push('wasm').
+    Reinicio: npx expo start --web --clear.
+    Clase: priorizar móvil; web = configuración extra.
