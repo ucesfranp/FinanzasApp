@@ -64,21 +64,26 @@ it('agrega un pago y aparece en la lista', async () => {
     expect(mockGetPagos).toHaveBeenCalled();
   }); 
 
+  //Simulamos interacción del usuario para agregar un pago
   await fireEvent.changeText(screen.getByLabelText('input-descripcion'),'Internet');
   await fireEvent.changeText(screen.getByLabelText('input-monto'), '2000');
   await fireEvent.changeText(screen.getByLabelText('input-fecha'), '2026-07-20');
 
+  // Verificamos que los valores se hayan actualizado correctamente en los inputs
   await waitFor(() => {
     expect(screen.getByDisplayValue('Internet')).toBeTruthy();
     expect(screen.getByDisplayValue('2000')).toBeTruthy();
     expect(screen.getByDisplayValue('2026-07-20')).toBeTruthy();
   });
 
+  // Simulamos el click en el botón de agregar
   await fireEvent.press(screen.getByLabelText('btn-agregar'))
 
+  // Verificamos que la función guardarPago haya sido llamada
   await waitFor(() => {
     expect(mockGuardarPago).toHaveBeenCalled();
   });
 
+  // Simulamos que el pago agregado ahora aparece en la lista
   expect(await screen.findByText('Internet')).toBeTruthy();
 })
