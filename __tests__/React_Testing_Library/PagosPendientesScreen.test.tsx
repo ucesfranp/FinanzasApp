@@ -1,5 +1,7 @@
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, screen, waitFor } from '@testing-library/react-native';
+import * as pagosService from '../../services/pagos';
+
 
 jest.mock('../../services/pagos', () => ({
   __esModule: true,
@@ -42,38 +44,37 @@ let mockGetPagos: jest.Mock;
 let mockGuardarPago: jest.Mock;
 
 beforeEach(() => {
-    jest.clearAllMocks();
-    const pagos = require('../../services/pagos');
-    mockGetPagos = pagos.getPagos;
-    mockGuardarPago = pagos.guardarPago;
-    mockGetPagos.mockResolvedValue([]);
-    mockGuardarPago.mockImplementation(async (p) => ({ id:1, ...p }));
-});
+  jest.clearAllMocks();
+  mockGetPagos = pagosService.getPagos as jest.Mock;
+  mockGuardarPago = pagosService.guardarPago as jest.Mock;
+  mockGetPagos.mockResolvedValue([]);
+  mockGuardarPago.mockImplementation(async (p) => ({ id: 1, ...p }));
+})
 
 it('agrega un pago y aparece en la lista', async () => {
+  await render(<PagosPendientesScreen/>);
 
-    const { getByLabelText, getByDisplayValue, getByText } = await render(<PagosPendientesScreen />);
+  await screen.findByText('No hay pagos pendientes');
 
-    await waitFor(() => {
-        expect(mockGetPagos).toHaveBeenCalled();
-        expect(getByText('No hay pagos pendientes')).toBeTruthy();
-    });
+  await waitFor(() => {
+    expect(mockGetPagos).toHaveBeenCalled();
+  }); 
 
-    fireEvent.changeText(getByLabelText('input-descripcion'), 'Internet');
-    fireEvent.changeText(getByLabelText('input-monto'), '2000');
-    fireEvent.changeText(getByLabelText('input-fecha'), '2026-07-20');
+  await fireEvent.changeText(screen.getByLabelText('input-descripcion'),'Internet');
+  await fireEvent.changeText(screen.getByLabelText('input-monto'), '2000');
+  await fireEvent.changeText(screen.getByLabelText('input-fecha'), '2026-07-20');
 
-    fireEvent.press(getByLabelText('btn-agregar'));
+  await waitFor(() => {
+    expect(screen.getByDisplayValue('Internet')).toBeTruthy();
+    expect(screen.getByDisplayValue('2000')).toBeTruthy();
+    expect(screen.getByDisplayValue('2026-07-20')).toBeTruthy();
+  });
 
-    await waitFor(() => {
-        expect(getByDisplayValue('Internet')).toBeTruthy();
-        expect(getByDisplayValue('2000')).toBeTruthy();
-        expect(getByDisplayValue('2026-07-20')).toBeTruthy();
-    });
+  await fireEvent.press(screen.getByLabelText('btn-agregar'))
 
-    await waitFor(() => {
-        expect(mockGuardarPago).toHaveBeenCalled();
-        expect(getByText('Internet')).toBeTruthy();
-    });
+  await waitFor(() => {
+    expect(mockGuardarPago).toHaveBeenCalled();
+  });
 
-});
+  expect(await screen.findByText('Internet')).toBeTruthy();
+})

@@ -46,17 +46,29 @@ export default function PagosPendientesScreen() {
             return;
         }
 
-        const nuevo = await guardarPago({
+        const pagoTemporal: PagoLocal = {
+            id: Date.now(),
             descripcion: descripcion.trim(),
             monto: montoNum,
             fechaVencimiento: fechaVto.trim(),
             pagado: false,
             pagoFecha: null,
-        });
-        setPagos(prev => [...prev, nuevo]);
+        };
+
+        setPagos(prev => [...prev, pagoTemporal]);
         setDescripcion('');
         setMonto('');
         setFechaVto('');
+
+        guardarPago({
+            descripcion: pagoTemporal.descripcion,
+            monto: pagoTemporal.monto,
+            fechaVencimiento: pagoTemporal.fechaVencimiento,
+            pagado: pagoTemporal.pagado,
+            pagoFecha: pagoTemporal.pagoFecha,
+        }).catch((error) => {
+            console.log('Error al guardar pago:', error);
+        });
     }
 
     async function onTogglePaid(p: PagoLocal) {
