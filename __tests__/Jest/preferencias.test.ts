@@ -6,6 +6,7 @@ type Preferencias = {
     temaOscuro?: boolean;
 }
 
+// Mokeamos AsyncStorage para que no haga llamadas reales durante las pruebas
 jest.mock('@react-native-async-storage/async-storage', () => ({
     __esModule: true,
     default: {
@@ -15,11 +16,13 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 }));
 
 describe('Preferencias', () => {
+    // Definimos un objeto de preferencias de ejemplo para usar en las pruebas
     const prefs: Preferencias = {
         nombre: 'Fran',
         temaOscuro: true,
     };
 
+    // Limpiamos los mocks antes de cada prueba para evitar interferencias entre ellas
     beforeEach(() => {
         jest.clearAllMocks();
     });
@@ -27,6 +30,7 @@ describe('Preferencias', () => {
     it('guardarPrefs guarda JSON en AsyncStorage', async () => {
         await guardarPrefs(prefs);
 
+        // Verificamos que AsyncStorage.setItem haya sido llamado correctamente con la clave y el valor esperado
         expect(AsyncStorage.setItem).toHaveBeenCalledTimes(1);
         expect(AsyncStorage.setItem).toHaveBeenCalledWith('preferencias_usuario', JSON.stringify(prefs));
     });
@@ -48,6 +52,6 @@ describe('Preferencias', () => {
 
         expect(AsyncStorage.getItem).toHaveBeenCalledTimes(1);
         expect(AsyncStorage.getItem).toHaveBeenCalledWith('preferencias_usuario');
-        expect(result).toEqual(prefs);
+        expect(result).toEqual(prefs); // Usamos toEqual para comparar objetos en lugar de toBe, que compara referencias
     });
 });
