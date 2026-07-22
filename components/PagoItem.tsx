@@ -15,9 +15,15 @@ interface Props {
     pago: PagoLocal;
     onTogglePaid: (pago: PagoLocal) => void;
     onEliminar: (id: number) => void;
+    colores?: {
+        textoPrimario: string;
+        texto: string;
+        inputBorder: string;
+        boton: string;
+    };
 }
 
-export default function PagoItem({ pago, onTogglePaid, onEliminar }: Props) {
+export default function PagoItem({ pago, onTogglePaid, onEliminar, colores }: Props) {
     const mostrarPagoFecha = pago.pagoFecha ? new Date(pago.pagoFecha).toLocaleString('es-AR', {
         day: '2-digit',
         month: '2-digit',
@@ -28,20 +34,20 @@ export default function PagoItem({ pago, onTogglePaid, onEliminar }: Props) {
 
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, colores && { borderColor: colores.inputBorder }]}>
             <Pressable
                 accessibilityLabel={`toggle-paid-${pago.id}`}
                 onPress={() => onTogglePaid(pago)}
                 style={styles.toggle}
             >
-                <Text style={styles.toggleText}>{pago.pagado ? '[X]' : '[ ]'}</Text>
+                <Text style={[styles.toggleText, { color: pago.pagado ? '#22c55e' : (colores?.boton ?? '#111827') }]}>{pago.pagado ? '✅' : '❌'}</Text>
             </Pressable>
         
             <View style={styles.info}>
-                <Text style={[styles.descripcion, pago.pagado && styles.tachada]}>
+                    <Text style={[styles.descripcion, { color: colores?.textoPrimario }, pago.pagado && styles.tachada, pago.pagado && colores && { color: colores.texto }]}>
                     {pago.descripcion}
                 </Text>
-                <Text style={styles.meta}>
+                <Text style={[styles.meta, { color: colores?.texto }]}>
                     ${pago.monto.toFixed(2)} • Vence: {pago.fechaVencimiento}
                 </Text>
                 {pago.pagado && mostrarPagoFecha && (
@@ -50,7 +56,7 @@ export default function PagoItem({ pago, onTogglePaid, onEliminar }: Props) {
             </View>
 
             <Pressable accessibilityLabel={`delete-${pago.id}`} onPress={() => onEliminar(pago.id)} style={styles.delete}>
-                <Text style={styles.deleteText}>❌</Text>
+                <Text style={styles.deleteText}>🗑️</Text>
             </Pressable>
         </View>
     )
@@ -64,7 +70,7 @@ const styles = StyleSheet.create({
   info: { flex: 1 },
   descripcion: { fontSize: 16, fontWeight: '500' },
   meta: { color: '#666', marginTop: 4 },
-  pagoFecha: { color: '#0b6', marginTop: 4, fontSize: 12 },
+    pagoFecha: { color: '#22c55e', marginTop: 4, fontSize: 12 },
   tachada: { textDecorationLine: 'line-through', color: '#999' },
   delete: { paddingLeft: 12 },
   deleteText: { color: '#c00', fontWeight: '700' },

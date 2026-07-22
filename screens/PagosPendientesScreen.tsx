@@ -115,43 +115,47 @@ export default function PagosPendientesScreen() {
 
     return (
 
-        <View style={{ flex: 1, paddingTop: 50}}>
-            <View style={styles.form}>
+        <View style={{ flex: 1, paddingTop: 50, backgroundColor: colores.fondo }}>
+            <View style={[styles.form, {margin: 20, marginTop: 30}]}>
                 <TextInput 
                     accessibilityLabel="input-descripcion"
                     placeholder="Descripción"
+                    placeholderTextColor={colores.texto}
                     value={descripcion}
                     onChangeText={setDescripcion}
-                    style={styles.input}
+                    style={[styles.input, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder, color: colores.texto }]}
                 />
                 <TextInput
                     accessibilityLabel="input-monto"
                     placeholder="Monto"
+                    placeholderTextColor={colores.texto}
                     value={monto}
                     onChangeText={setMonto}
                     keyboardType="decimal-pad"
-                    style={styles.input}
+                    style={[styles.input, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder, color: colores.texto }]}
                 />
                 <TextInput
                     accessibilityLabel="input-fecha"
                     placeholder="Fecha venc. (YYYY-MM-DD)"
+                    placeholderTextColor={colores.texto}
                     value={fechaVto}
                     onChangeText={setFechaVto}
-                    style={styles.input}
+                    style={[styles.input, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder, color: colores.texto }]}
                 />
-                <Pressable accessibilityLabel="btn-agregar" style={styles.btn} onPress={onAgregar}>
+                <Pressable accessibilityLabel="btn-agregar" style={[styles.btn, { backgroundColor: colores.boton }]} onPress={onAgregar}>
                     <Text style={styles.btnText}>Agregar pago</Text>
                 </Pressable>
             </View>
 
-            <ScrollView style={{ flex: 1}}>
+            <ScrollView style={{ flex: 1, backgroundColor: colores.fondo }}>
                 {pagos.length === 0 ? (
-                    <Text style={{ padding: 16, color: '#666' }}>No hay pagos pendientes</Text>
+                    <Text style={{ padding: 16, color: colores.texto, textAlign: 'center' }}>No hay pagos pendientes</Text>
                 ) : (
                     pagos.map(p => (
                         <PagoItem 
                             key={p.id}
                             pago={p}
+                            colores={colores}
                             onTogglePaid={onTogglePaid}
                             onEliminar={onEliminar}
                         />
@@ -166,8 +170,8 @@ export default function PagosPendientesScreen() {
 
 
 const styles = StyleSheet.create({
-  form: { padding: 12, borderBottomWidth: 1, borderColor: '#eee' },
-  input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 6, padding: 8, marginBottom: 8 },
-  btn: { backgroundColor: '#4f46e5', padding: 12, borderRadius: 6, alignItems: 'center' },
+    form: { padding: 12 },
+    input: { borderWidth: 1, borderRadius: 6, padding: 8, marginBottom: 8 },
+    btn: { padding: 12, borderRadius: 6, alignItems: 'center' },
   btnText: { color: 'white', fontWeight: '700' },
 });
