@@ -27,17 +27,17 @@ it('muestra descripcion y monto', async () => {
 
 it('llama onTogglePaid al presionar el toggle', async () => {
     const { getByText } = await renderItem();
-    fireEvent.press(getByText('[ ]'));
+    fireEvent.press(getByText('❌'));
     expect(mockToggle).toHaveBeenCalledWith(pago);
 });
 
 it('llama onEliminar al presionar X', async () => {
     const { getByText } = await renderItem();
-    fireEvent.press(getByText('❌'));
+    fireEvent.press(getByText('🗑️'));
     expect(mockEliminar).toHaveBeenCalledWith(1);
 });
 
-it('muestra [X] si pagado', async () => {
+it('muestra ✅ si pagado', async () => {
     const { getByText } = await renderItem({ ...pago, pagado: true, pagoFecha: new Date().toISOString() });
-    expect(getByText('[X]')).toBeTruthy();
+    expect(getByText('✅')).toBeTruthy();
 });
