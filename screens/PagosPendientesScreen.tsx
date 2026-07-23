@@ -5,6 +5,7 @@ import { getPagos, guardarPago, actualizarPago, eliminarPago } from '../services
 import { useSQLiteContext } from 'expo-sqlite';
 import BottomNav from '../components/BottomNav';
 import { useTema } from '../context/TemaContext';
+import { showAlert } from '../services/alertUtils';
 
 
 export default function PagosPendientesScreen() {
@@ -12,6 +13,7 @@ export default function PagosPendientesScreen() {
     //Para el modo oscuro
     const { colores } = useTema();
 
+    // Conexión con SQLite para actualizar el presupuesto mensual cuando se marca un pago como pagado o se desmarca
     const db = (() => {
         try {
             return useSQLiteContext();
@@ -20,6 +22,7 @@ export default function PagosPendientesScreen() {
         }
     })();
 
+    // Estado para manejar los pagos y los inputs del formulario
     const [pagos, setPagos] = useState<PagoLocal[]>([]);
     const [descripcion, setDescripcion] = useState('');
     const [monto, setMonto] = useState('');
@@ -29,37 +32,47 @@ export default function PagosPendientesScreen() {
         cargar();
     }, [])
 
+    // Cuando seleccionamos la pantalla de pagos pendientes, useEffect llama a cargar() que espera el resultado de getPagos(),  el cual lee AsyncStorage y luego setPagos() actualiza el estado de pagos con los datos obtenidos por getPagos(). Y React vuelve a renderizar la lista.
     async function cargar(){
-        const datos = await getPagos();
+        const datos = await getPagos(); //Uso await porque AsyncStorage deuvelve una promesa.
         setPagos(datos);
     }
 
+    // 3 etapas: Validar, Crear el objeto y guardarlo.
     async function onAgregar() {
+
+        //Eliminamos los espacios al principio y final o detectamos si es el campo viene vacio
         if(!descripcion.trim() || !monto.trim() || !fechaVto.trim()) {
-            Alert.alert('Error', 'Completa todos los campos');
+            showAlert('Error', 'Completa todos los campos');
             return;
         }
 
+        //Validamos el monto ingresado por el usuario
         const montoNum = parseFloat(monto);
         if (isNaN(montoNum) || montoNum <= 0) {
-            Alert.alert('Error', 'Monto inválido');
+            showAlert('Error', 'Monto inválido');
             return;
         }
 
+        // Creamos el objeto de pagoTemporal con los datos ingresados por el usuario y un id único basado en la fecha actual (Date.now())
         const pagoTemporal: PagoLocal = {
             id: Date.now(),
             descripcion: descripcion.trim(),
             monto: montoNum,
             fechaVencimiento: fechaVto.trim(),
             pagado: false,
-            pagoFecha: null,
+            pagoFecha: null, //Null ya que todavía no tiene fecha de pago
         };
 
+        // Actualizamos la interfaz
+        // Creamos un nuevo array con los pagos existentes y el nuevo
         setPagos(prev => [...prev, pagoTemporal]);
+        //Limpiamos el formulario
         setDescripcion('');
         setMonto('');
         setFechaVto('');
 
+        // Persistencia: llamamos al servicio de pagos -> guardarPago() para que escriba el pago en AsyncStorage. No uso await ya que la persistencia la intentamos en segundo plano para que el usuario vea inmediatamente el pago al agregarlo.
         guardarPago({
             descripcion: pagoTemporal.descripcion,
             monto: pagoTemporal.monto,
@@ -71,9 +84,10 @@ export default function PagosPendientesScreen() {
         });
     }
 
+    // Función para alternar el estado del pago a saldado o pendiente.
     async function onTogglePaid(p: PagoLocal) {
-        const pagadoAhora = !p.pagado;
-        const pagoFecha = pagadoAhora ? new Date().toISOString() : null;
+        const pagadoAhora = !p.pagado; //Invierte el estado del pago.
+        const pagoFecha = pagadoAhora ? new Date().toISOString() : null; //Si se marca como pagado, guardamos la fecha actual; si se desmarca, ponemos null.
         const actualizado: PagoLocal = { ...p, pagado: pagadoAhora, pagoFecha };
 
         await actualizarPago(actualizado);
@@ -82,7 +96,7 @@ export default function PagosPendientesScreen() {
         //Si se marcó como pagado, restamos del presupuesto mensual; y en caso que se desmarque como pagado, sumamos nuevamente al presupuesto mensual. Esto es para mantener el presupuesto actualizado según los pagos realizados.
         if (pagadoAhora && db && db.runAsync) {
             try {
-                //leemos el presupuesto actual
+                    //leemos el presupuesto actual
                     const pref = await db.getFirstAsync("select valor from preferencias where clave = 'presupuesto_mensual'") as { valor: string } | undefined;
                 if (pref && pref.valor) {
                     const actual = parseFloat(pref.valor) || 0;
@@ -107,6 +121,7 @@ export default function PagosPendientesScreen() {
         }
     }
 
+    // Función para eliminar un pago. Llama a eliminarPago() del servicio de pagos para que borre el pago de AsyncStorage y luego actualiza el estado de pagos para reflejar el cambio en la interfaz.
     async function onEliminar(id: number) {
         await eliminarPago(id);
         setPagos(prev => prev.filter(x => x.id !== id));

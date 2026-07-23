@@ -1,5 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { guardarPrefs, leerPrefs } from '../../services/preferencias';
+//Comprobamos la persistencia de preferencias sin acceder al almacenamiento real
+
 
 type Preferencias = {
     nombre: string;
@@ -30,13 +32,13 @@ describe('Preferencias', () => {
     it('guardarPrefs guarda JSON en AsyncStorage', async () => {
         await guardarPrefs(prefs);
 
-        // Verificamos que AsyncStorage.setItem haya sido llamado correctamente con la clave y el valor esperado
+        // Verificamos que AsyncStorage.setItem haya sido llamado correctamente con la clave y el valor esperado. Que llame una vez a setItem; y guarde el Json correcto
         expect(AsyncStorage.setItem).toHaveBeenCalledTimes(1);
         expect(AsyncStorage.setItem).toHaveBeenCalledWith('preferencias_usuario', JSON.stringify(prefs));
     });
 
     it('leerPrefs devuelve null cuando no hay datos guardados', async () => {
-        (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(null);
+        (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(null); //Simulamos una promesa que devuelve null una sola vez
 
         const result = await leerPrefs();
 

@@ -44,7 +44,7 @@ export default function PagoItem({ pago, onTogglePaid, onEliminar, colores }: Pr
             </Pressable>
         
             <View style={styles.info}>
-                    <Text style={[styles.descripcion, { color: colores?.textoPrimario }, pago.pagado && styles.tachada, pago.pagado && colores && { color: colores.texto }]}>
+                <Text style={[styles.descripcion, { color: colores?.textoPrimario }, pago.pagado && styles.tachada, pago.pagado && colores && { color: colores.texto }]}>
                     {pago.descripcion}
                 </Text>
                 <Text style={[styles.meta, { color: colores?.texto }]}>

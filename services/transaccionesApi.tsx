@@ -1,6 +1,7 @@
 import axios from 'axios'; 
 import { Transaccion } from '../screens/FinanzasTypes'; 
 
+// Creo una instancia para evitar repetir la URL base en cada llamada.
 const api = axios.create({ 
     baseURL: 'https://6a25e93f5447714a6f83c529.mockapi.io', 
 }); 

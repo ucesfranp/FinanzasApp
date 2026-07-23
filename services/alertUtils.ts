@@ -6,6 +6,7 @@ export const showAlert = (
     buttons?: Array<{ text: string; onPress?: () => void; style?: 'default' | 'cancel' | 'destructive' }>
 ) => {
     if (Platform.OS === 'web') {
+        //En la web usamos window.alert y window.confirm para mostrar alertas y confirmaciones, ya que no se comportan de igual manera que en mobile
         if (buttons && buttons.length > 1) {
             const confirmed = window.confirm(`${title}\n\n${message}`);
             if (confirmed) {

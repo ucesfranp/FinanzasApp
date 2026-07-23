@@ -1,5 +1,6 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+// Verificamos que la pantalla de ajustes muestre el modo oscuro y que el switch llame al callback correcto
 
 const mockDb = {
     getFirstAsync: jest.fn(),
@@ -64,14 +65,17 @@ describe('AjustesFinanzasScreen', () => {
   });
 
   test('muestra el switch de modo oscuro y llama a cambiarTema cuando se activa', async () => {
+    // Probamos que elementos visibles importantes existan
     await render(<AjustesFinanzasScreen navigation={mockNavigation} />);
 
     expect(screen.getByText('Ajustes')).toBeTruthy();
     expect(screen.getByText('Modo oscuro')).toBeTruthy();
 
+    //Simulamos el evento en que el usuario hace el switch al modo oscuro para activarlo
     const switchElement = screen.getByRole('switch');
-  await fireEvent(switchElement, 'valueChange', true);
+    await fireEvent(switchElement, 'valueChange', true);
 
+    //Demostramos que al activar el switch produce el cambio de tema esperado
     await waitFor(() => {
       expect(mockChangeTheme).toHaveBeenCalledWith(true);
     });

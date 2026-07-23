@@ -1,3 +1,4 @@
+//Servicio de logica pura para calcular el resumen del presupuesto. No tiene dependencias de React ni de AsyncStorage, por lo que es fácilmente testeable.
 export type TipoTransaccion = 'ingreso' | 'gasto';
 
 export interface TransaccionPresupuesto {

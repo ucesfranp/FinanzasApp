@@ -1,5 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
+//Contiene el nombre del usuario y si el tema oscuro esta activo.
 interface Preferencias {
     nombre: string;
     temaOscuro?: boolean;

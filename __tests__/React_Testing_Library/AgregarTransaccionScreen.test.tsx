@@ -1,5 +1,7 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+// Verificamos el flujo de completar y guardar una transacción.
+
 
 // variable de mock para simular la base de datos SQLite
 const mockDB = {
@@ -67,16 +69,19 @@ describe('<AgregarTransaccionScreen />', () => {
     });
 
     it('guarda una transacción válida y navega de vuelta', async () => {
+        //Esperamos pq la screen carga categorías en un useEffect
         await render(<AgregarTransaccionScreen navigation={mockNavigation} />);
         await waitFor(() => {
             expect(mockDB.getAllAsync).toHaveBeenCalledTimes(1);
         });
 
+        // Usamos identificadores visibles o accesibles en vez de depender de la estructura interna.
         const descripcionInput = screen.getByPlaceholderText('Ej: Compra en supermercado');
         const montoInput = screen.getByPlaceholderText('0.00');
         const fechaInput = screen.getByPlaceholderText('Ej: 2024-06-10');
         const guardarButton = screen.getByLabelText('guardar-transaccion');
 
+        // Verficiamos q los valores realmente hayan llegado a los inputs.
         await fireEvent.changeText(descripcionInput, 'Compra en supermercado');
         await fireEvent.changeText(montoInput, '250');
         await fireEvent.changeText(fechaInput, '2024-06-10');

@@ -1,6 +1,9 @@
+//Defino los colores que cualquier pantalla puede consumir
+
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { leerPrefs, guardarPrefs } from '../services/preferencias';
 
+// Definición de los tipos de datos para el contexto del tema
 interface ColoresTema {
   fondo: string;
   textoPrimario: string;
@@ -37,8 +40,10 @@ const coloresOscuro: ColoresTema = {
 const TemaContext = createContext<TemaContextType | undefined>(undefined);
 
 export function TemaProvider({ children }: { children: React.ReactNode }) {
-  const [oscuro, setOscuro] = useState(false);
+  const [oscuro, setOscuro] = useState(false); //La app empieza en modo claro por default
 
+
+  // Leo las preferencias. Obtengo el temaOscuro; se actualiza el estado global y todas las pantallas se renderizan
   useEffect(() => {
     const cargarTema = async () => {
       const prefs = await leerPrefs();
@@ -48,6 +53,7 @@ export function TemaProvider({ children }: { children: React.ReactNode }) {
     cargarTema();
   }, []);
 
+  // Conservamos el nombre actual y guardamos el nuevo valor del tema.
   const cambiarTema = async (valor: boolean) => {
     try {
       const prefsActuales = await leerPrefs();

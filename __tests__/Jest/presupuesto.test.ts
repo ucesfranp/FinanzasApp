@@ -1,5 +1,7 @@
 import { calcularResumenPresupuesto, TransaccionPresupuesto } from '../../services/presupuestoUtils';
 import { describe, it, expect } from '@jest/globals';
+//Comprobamos una función pura
+
 
 describe('calcularResumenPresupuesto', () => {
     it('calcular correctamente el disponible cuando hay ingresos y gastos', () => {
@@ -11,6 +13,7 @@ describe('calcularResumenPresupuesto', () => {
 
         const resumen = calcularResumenPresupuesto(transacciones, 5000);
 
+        //Usamos toBe pq comparamos numeros
         expect(resumen.totalIngresos).toBe(2000);
         expect(resumen.totalGastos).toBe(800);
         expect(resumen.presupuesto).toBe(5000);

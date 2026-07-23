@@ -1,3 +1,6 @@
+/* 
+BottomNav.tsx --> evito duplicar la misma navegación en todas las pantallas. Los itmes se definen en un array y se renderizan con map. Current me permite distinguir la pantlla activa, y el contexto de tema cambia los colores según el modo de apariencia.
+*/
 import React from 'react';
 import { View, Pressable, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,14 +11,16 @@ import { RootStackParamList } from '../navigation/types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
+// current: indica cual pestaña esta activa
 interface BottomNavProps {
   current: 'Home' | 'Movimientos' | 'Categorias' | 'Ajustes' | 'PagosPendientes'; // Agregamos PagosPendientes al tipo
 }
 
 export default function BottomNav({ current }: BottomNavProps) {
-  const { colores } = useTema();
-  const navigation = useNavigation<NavigationProp>();
+  const { colores } = useTema(); //Adapta la barra al modo oscuro o claro
+  const navigation = useNavigation<NavigationProp>(); //Permite navegar
 
+  // Esta lista permite renderizar todos los botones con un unico map, evitando repetir código. Cada objeto tiene un nombre, un icono y una etiqueta.
   const items = [
     { name: 'Home', icon: 'home-outline' as const, label: 'Inicio' },
     { name: 'Movimientos', icon: 'swap-horizontal-outline' as const, label: 'Movs.' },
@@ -33,7 +38,7 @@ export default function BottomNav({ current }: BottomNavProps) {
           <Pressable
             key={item.name}
             style={styles.item}
-            onPress={() => navigation.navigate(item.name as 'Home' | 'Movimientos' | 'Categorias' | 'Ajustes')}
+            onPress={() => navigation.navigate(item.name as 'Home' | 'Movimientos' | 'PagosPendientes' | 'Categorias' | 'Ajustes')}
           >
             <Ionicons
               name={item.icon}

@@ -1,8 +1,9 @@
 import React from 'react';
 import { render, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import * as pagosService from '../../services/pagos';
+// Comprobamos que el usuario pueda agregar un pago y verlo en la lista
 
-
+// Mockeamos el servicio de pagos para controlar su comportamiento en los tests
 jest.mock('../../services/pagos', () => ({
   __esModule: true,
   // Estamos trayendo las funciones reales para poder espiar sus llamadas
@@ -51,15 +52,20 @@ beforeEach(() => {
   // Asignamos los mocks a las funciones del servicio "as jest.Mock" para que TypeScript sepa que son funciones simuladas.
   mockGetPagos = pagosService.getPagos as jest.Mock;
   mockGuardarPago = pagosService.guardarPago as jest.Mock;
+
+  //Simulamos que inicialmente no hay pagos y que guardar devuevle un nuevo pago con id.
   mockGetPagos.mockResolvedValue([]);
   mockGuardarPago.mockImplementation(async (p) => ({ id: 1, ...p }));
 })
 
 it('agrega un pago y aparece en la lista', async () => {
+  //Renderizamos la screen.
   await render(<PagosPendientesScreen/>);
 
+  //Esperamos el texto..
   await screen.findByText('No hay pagos pendientes');
 
+  // Verificamos que getPagos fue llamado
   await waitFor(() => {
     expect(mockGetPagos).toHaveBeenCalled();
   }); 
