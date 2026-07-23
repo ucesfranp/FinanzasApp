@@ -124,7 +124,7 @@ export default function PagosPendientesScreen() {
     // Función para eliminar un pago. Llama a eliminarPago() del servicio de pagos para que borre el pago de AsyncStorage y luego actualiza el estado de pagos para reflejar el cambio en la interfaz.
     async function onEliminar(id: number) {
         await eliminarPago(id);
-        setPagos(prev => prev.filter(x => x.id !== id));
+        setPagos(prev => prev.filter(x => x.id !== id)); // utilizamos el filter para crear un nuevo array sin el pago eliminado y actualizar el estado de pagos.
     }
 
 
