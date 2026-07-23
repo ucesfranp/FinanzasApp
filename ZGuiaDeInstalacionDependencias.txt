@@ -32,6 +32,7 @@ PASOS A SEGUIR PARA INSTALAR LAS DEPENDENCIAS --> Comandos CMD
 
 
 13- npx expo install jest-expo --save-dev
+||   npx expo install jest-expo -- --save-dev
 
 14- npx expo install jest-expo jest @types/jest -dev 
     npx expo install @testing-library/react-native -dev
