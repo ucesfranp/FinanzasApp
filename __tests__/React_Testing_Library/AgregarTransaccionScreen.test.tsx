@@ -1,6 +1,6 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-// Verificamos el flujo de completar y guardar una transacción.
+// Verificamos el flujo de completar y guardar una transacción/movimiento.
 
 
 // variable de mock para simular la base de datos SQLite
@@ -12,7 +12,6 @@ const mockDB = {
 // variable de mock para simular la navegación
 const mockNavigation = { navigate: jest.fn(), goBack: jest.fn() } as any;
 
-// variable de mock para simular el contexto de tema
 const mockCreate = jest.fn();
 
 // variable de mock para simular la función showAlert
@@ -71,7 +70,7 @@ describe('<AgregarTransaccionScreen />', () => {
     it('guarda una transacción válida y navega de vuelta', async () => {
         //Esperamos pq la screen carga categorías en un useEffect
         await render(<AgregarTransaccionScreen navigation={mockNavigation} />);
-        await waitFor(() => {
+        await waitFor(() => { 
             expect(mockDB.getAllAsync).toHaveBeenCalledTimes(1);
         });
 
@@ -99,6 +98,7 @@ describe('<AgregarTransaccionScreen />', () => {
             expect(mockNavigation.goBack).toHaveBeenCalledTimes(1);
         });
 
+        // Esperamos que la función de creación de transacciones se haya llamado con los datos correctos y que la alerta se haya mostrado.
         expect(mockCreate).toHaveBeenCalledWith({
             descripcion: 'Compra en supermercado',
             monto: 250,

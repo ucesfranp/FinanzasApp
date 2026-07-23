@@ -3,7 +3,7 @@ import { render, fireEvent, screen, waitFor } from '@testing-library/react-nativ
 import * as pagosService from '../../services/pagos';
 // Comprobamos que el usuario pueda agregar un pago y verlo en la lista
 
-// Mockeamos el servicio de pagos para controlar su comportamiento en los tests
+// Mockeamos el servicio de pagos para controlar su comportamiento en los tests --> ya que es todo codigo asincrono
 jest.mock('../../services/pagos', () => ({
   __esModule: true,
   // Estamos trayendo las funciones reales para poder espiar sus llamadas

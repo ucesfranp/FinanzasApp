@@ -12,10 +12,10 @@ const CLAVE = 'preferencias_usuario';
 
 // Función para guardar las preferencias del usuario en AsyncStorage. Recibe un objeto Preferencias y lo convierte a JSON antes de guardarlo. El Promise es para indicar que la operación es asíncrona y puede completarse en el futuro.
 export async function guardarPrefs(prefs: Preferencias): Promise<void> {
-    await AsyncStorage.setItem(CLAVE, JSON.stringify(prefs));
+    await AsyncStorage.setItem(CLAVE, JSON.stringify(prefs)); //Transformamos el objeto prefs a una cadena JSON y lo guardamos en AsyncStorage bajo la clave definida.
 }
 
 export async function leerPrefs(): Promise<Preferencias | null> {
-    const raw = await AsyncStorage.getItem(CLAVE);
+    const raw = await AsyncStorage.getItem(CLAVE); //Destransformamos la cadena JSON de vuelta a un objeto Preferencias. Si no hay datos guardados, devuelve null.
     return raw ? JSON.parse(raw) : null;
 }

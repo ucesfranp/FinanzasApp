@@ -37,7 +37,7 @@ export default function PagoItem({ pago, onTogglePaid, onEliminar, colores }: Pr
         <View style={[styles.container, colores && { borderColor: colores.inputBorder }]}>
             <Pressable
                 accessibilityLabel={`toggle-paid-${pago.id}`}
-                onPress={() => onTogglePaid(pago)}
+                onPress={() => onTogglePaid(pago)} // Aca se lo llama con el objeto pago, por eso lo usamos asi en el test
                 style={styles.toggle}
             >
                 <Text style={[styles.toggleText, { color: pago.pagado ? '#22c55e' : (colores?.boton ?? '#111827') }]}>{pago.pagado ? '✅' : '❌'}</Text>

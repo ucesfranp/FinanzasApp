@@ -33,6 +33,7 @@ export default function BottomNav({ current }: BottomNavProps) {
   return (
     <View style={[styles.container, { backgroundColor: colores.inputBg, borderColor: colores.inputBorder }]}> 
       {items.map((item) => {
+        // Detecta si el item actual es el que corresponde a la pantalla activa, para cambiar el color del icono y la etiqueta.
         const active = current === item.name;
         return (
           <Pressable

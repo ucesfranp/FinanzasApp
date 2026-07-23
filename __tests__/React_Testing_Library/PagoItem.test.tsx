@@ -14,7 +14,7 @@ const pago: PagoLocal = {
 };
 
 // Creo callbacks espia 
-const mockToggle = jest.fn();
+const mockToggle = jest.fn(); // Esto crea una función simulada que podemos usar para verificar si se llama correctamente.
 const mockEliminar = jest.fn();
 
 async function renderItem(p = pago) {
@@ -22,7 +22,7 @@ async function renderItem(p = pago) {
 }
 
 it('muestra descripcion y monto', async () => {
-    const { getByText } = await renderItem();
+    const { getByText } = await renderItem(); 
     expect(getByText('Luz')).toBeTruthy();
     expect(getByText(/\$1500/)).toBeTruthy();
 });
@@ -30,7 +30,7 @@ it('muestra descripcion y monto', async () => {
 it('llama onTogglePaid al presionar el toggle', async () => {
     const { getByText } = await renderItem();
     fireEvent.press(getByText('❌'));
-    expect(mockToggle).toHaveBeenCalledWith(pago);
+    expect(mockToggle).toHaveBeenCalledWith(pago); // Esto verifica que la función mockToggle haya sido llamada con el objeto pago como argumento
 });
 
 it('llama onEliminar al presionar 🗑️', async () => {

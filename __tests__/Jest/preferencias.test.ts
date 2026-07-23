@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { guardarPrefs, leerPrefs } from '../../services/preferencias';
-//Comprobamos la persistencia de preferencias sin acceder al almacenamiento real
+//Comprobamos la persistencia de preferencias sin acceder al almacenamiento real para ello usamos los mocks de Jest. Esto nos permite simular el comportamiento de AsyncStorage y verificar que nuestras funciones interactúan correctamente con él.
 
 
 type Preferencias = {
